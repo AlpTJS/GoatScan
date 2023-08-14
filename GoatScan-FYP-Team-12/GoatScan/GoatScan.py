@@ -529,32 +529,31 @@ def scanning_command(args):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)     
 
-    # # XSS Static Analysis
-    # xssOutput = run_SemGrep(plugin_folder, 'XSS',
-    #                         'SemgrepRules/XSS', temp_dir)
-    # timer(20)
+    # XSS Static Analysis
+    xssOutput = run_SemGrep(plugin_folder, 'XSS',
+                            'SemgrepRules/XSS', temp_dir)
+    timer(20)
 
-    # # SQL Static Analysis
-    # sqliOutput = run_SemGrep(plugin_folder, 'SQLi',
-    #                          'SemgrepRules/SQLI', temp_dir)
-    # timer(20)
+    # SQL Static Analysis
+    sqliOutput = run_SemGrep(plugin_folder, 'SQLi',
+                             'SemgrepRules/SQLI', temp_dir)
+    timer(20)
 
-    # # Command Injection Static Analysis
-    # cmdiOutput = run_SemGrep(plugin_folder, 'Cmdi',
-    #                          f'SemgrepRules/CmdI', temp_dir)
+    # Command Injection Static Analysis
+    cmdiOutput = run_SemGrep(plugin_folder, 'Cmdi',
+                             f'SemgrepRules/CmdI', temp_dir)
 
-    # timer(20)
-    # # Broken Authentication Static Analysis
-    
-    # #ifAuthFailCheck
-    # AuthFailOutput = run_SemGrep(plugin_folder, 'AuthFail',
-    #                              'SemgrepRules/AuthFail', temp_dir)
+    timer(20)
+    # Broken Authentication Static Analysis
+    #ifAuthFailCheck not yet implemented
+    AuthFailOutput = run_SemGrep(plugin_folder, 'AuthFail',
+                                    'SemgrepRules/AuthFail', temp_dir)
 
-    # semgrepOutputFiles = {'XSS': xssOutput,
-    #                       'SQLI': sqliOutput,
-    #                       'CmdI': cmdiOutput,
-    #                       'AuthFail': AuthFailOutput
-    #                       }
+    semgrepOutputFiles = {'XSS': xssOutput,
+                          'SQLI': sqliOutput,
+                          'CmdI': cmdiOutput,
+                          'AuthFail': AuthFailOutput
+                          }
 
     semgrepOutputFiles = False
 
@@ -594,19 +593,15 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
             enclosed_cookie =cookie
 
         # Website Crawling
-        # urls_file = run_wget(wordpress_url, enclosed_cookie, temp_dir)
+        urls_file = run_wget(wordpress_url, enclosed_cookie, temp_dir)
 
         # XSS Dynamic Analysis
-
-        # xss_urls_file = run_gf(urls_file, 'xss', temp_dir, wordpress_url)
-        xss_urls_file = 'temp/gf.txt'
+        xss_urls_file = run_gf(urls_file, 'xss', temp_dir, wordpress_url)
         dalfox_output = run_DalFox(xss_urls_file, enclosed_cookie, temp_dir)
-
         timer(20)
+        
         # SQL Dynamic Analysis
-
-        # sqli_urls_file = run_gf(urls_file, 'sql',temp_dir, wordpress_url)
-        sqli_urls_file = 'temp/gfsql.txt'
+        sqli_urls_file = run_gf(urls_file, 'sql',temp_dir, wordpress_url)
         sqlmap_output = run_sqlmap(sqli_urls_file, enclosed_cookie, temp_dir)
 
         dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
