@@ -1,0 +1,155 @@
+rules:
+- id: echoed-request
+  mode: taint
+  message: Potential XSS vulnerability detected
+    
+  languages: [php]
+  severity: ERROR
+  pattern-sources:
+
+    #User-Input
+    - pattern: $_GET
+    - pattern: $_POST
+    - pattern: $_REQUEST
+    - pattern: $_FILES   
+    - pattern: $_COOKIE
+    - pattern: $_SERVER
+    - pattern: $_SESSION
+    - pattern: $_ENV
+    - pattern: $argc
+    - pattern: $argv
+
+    # Database Inputs
+    - pattern: 'fetch_all(...)'
+    - pattern: 'fetch_array(...)'
+    - pattern: 'fetch_assoc(...)'
+    - pattern: 'fetch_field(...)'
+    - pattern: 'fetch_objects(...)'
+    - pattern: 'fetch_row(...)'
+
+    # File inputs
+    - pattern: bzread(...)
+    - pattern: dio_read(...)
+    - pattern: exif_imagetype(...)
+    - pattern: exif_read_data(...)
+    - pattern: exif_thumbnail(...)
+    - pattern: fgets(...)
+    - pattern: fgetss(...)
+    - pattern: fopen(...)
+    - pattern: file(...)
+    - pattern: file_get_contents(...)
+    - pattern: fread(...)
+    - pattern: get_meta_tags(...)
+    - pattern: glob(...)
+    - pattern: gzread(...)
+    - pattern: readdir(...)
+    - pattern: read_exif_data(...)
+    - pattern: scandir(...)
+    - pattern: zip_read(...)
+    - pattern: readline(...)
+    - pattern: fgets(...)
+
+    # Other Functions as Inputs
+    - pattern: get_headers(...)
+    - pattern: getallheaders(...)
+    - pattern: get_browser(...)
+    - pattern: getenv(...)
+    - pattern: gethostbyaddr(...)
+
+
+  pattern-sanitizers:
+  - pattern: stripslashes(...)
+  - pattern: strip_tags(...)  
+  - pattern: htmlspecialcharacters(...)
+  - pattern: empty(...)
+  - pattern: isset(...)
+  - pattern: is_int(...)
+  - pattern: sanitize_text_field(...)
+  - pattern: wp_strip_all_tags(...)
+  - pattern: htmlentities(...)
+  - pattern: empty(...)
+  - pattern: esc_html(...)
+  - pattern: esc_url_raw(...)
+  - pattern: esc_textarea(...)
+  - pattern: esc_url(...)
+  - pattern: esc_attr(...)
+  - pattern: esc_js(...)
+  - pattern: esc_absint(...)
+  - pattern: esc_intval(...)
+  - pattern: wp_kses(...)
+  - pattern: wp_kses_post(...)
+  - pattern: sanitize_key(...)
+  - pattern: rawurlencode(...)
+  - pattern: filter_input(...)
+  
+  # - pattern: $X = $ANYFUNC(...);
+  # - patterns:
+  # - pattern-inside: echo <... $ANYFUNC(...) ...>;
+  # - pattern: $ANYFUNC(...)
+  #  - patterns:
+  #       - focus-metavariable: $PHP
+  #       - pattern: |
+  #           $TAG.$PHP.$ENDTAG
+
+  #       # '<div> random words allowed'
+  #       - metavariable-pattern:
+  #           metavariable: $TAG
+  #           pattern-regex: ('|")<[a-zA-Z0-9]*>.*('|")
+
+  #       # '</div> random words allowed'
+  #       - metavariable-pattern:
+  #           metavariable: $ENDTAG
+  #           pattern-regex: ('|")<\/[a-zA-Z0-9]*>.*('|")
+
+
+
+  pattern-sinks:
+  - pattern: echo $X;
+  - pattern: print $X;
+  - pattern: print_r(...);
+  - pattern: exit(...)
+  - pattern: die(...)
+  - pattern: printf(...)
+  - pattern: vprintf(...)
+  - pattern: trigger_error(...)
+  - pattern: user_error(...)
+  - pattern: odbc_result_all(...)
+  - pattern: ovrimos_result_all(...)
+  - pattern: ifx_htmltbl_result(...)
+  - pattern: assert(...)
+  - pattern: create_function(...)
+  - pattern: eval(...)
+  - pattern: mb_ereg_replace(...)
+  - pattern: mb_eregi_replace(...)
+  - pattern: var_dump(...);
+  - pattern: var_export(...);
+  - pattern: shell_exec(...)
+  - pattern: exec(...)
+  - pattern: system(...)
+  - pattern: header(...)
+  - pattern: setcookie(...)
+    
+
+  metadata:
+    technology:
+    - php
+    cwe:
+    - "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+    owasp:
+    - A07:2017 - Cross-Site Scripting (XSS)
+    - A03:2021 - Injection
+    category: security
+    references:
+    - https://www.php.net/manual/en/function.htmlentities.php
+    - https://www.php.net/manual/en/reserved.variables.request.php
+    - https://www.php.net/manual/en/reserved.variables.post.php
+    - https://www.php.net/manual/en/reserved.variables.get.php
+    - https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+
+    cwe2022-top25: true
+    cwe2021-top25: true
+    subcategory:
+    - vuln
+    likelihood: MEDIUM
+    impact: MEDIUM
+    confidence: MEDIUM

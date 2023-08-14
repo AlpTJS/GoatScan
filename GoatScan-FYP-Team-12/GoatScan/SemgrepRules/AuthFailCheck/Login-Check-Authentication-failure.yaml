@@ -1,0 +1,42 @@
+rules:
+  - id: login-check-authentication_failure
+    patterns:
+      - pattern-either:
+          - pattern-regex: |
+              (?i)(.*user.*)
+          - pattern-regex: |
+              (?i)(.*pass.*)
+          - pattern-regex: |
+              (?i)(.*email.*)
+          - pattern-regex: |
+              (?i)(.*login.*)
+          - pattern-regex: |
+              (?i)(.*register.*)
+          - pattern: |
+              $name
+          - pattern: |
+              $email
+          - pattern: |
+              $pass
+          - pattern: |
+              $password
+          - pattern: |
+              $cpass
+          - pattern: |
+              $user_type
+          - pattern: |
+              $token
+          - pattern: |
+              $session_id
+          - pattern: |
+              $user_id
+          - pattern: |
+              $admin
+          - pattern: |
+              $admin_id
+          - pattern: |
+              $user_name
+    message: Semgrep found a match
+    languages:
+      - php
+    severity: WARNING

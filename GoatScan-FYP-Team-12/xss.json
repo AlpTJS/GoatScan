@@ -1,0 +1,17 @@
+"results": [
+    {
+      "check_id": "temp.echoed-request",
+      "end": { "col": 150, "line": 139, "offset": 7381 },
+      "extra": {
+
+        "dataflow_trace": {
+          
+          "intermediate_vars": [
+            {
+              "content": "$breadcrumb_arr",
+              "location": {
+                "end": { "col": 20, "line": 35, "offset": 1141 },
+                "path": "BWGViewAlbum_compact_preview.php",
+                "start": { "col": 5, "line": 35, "offset": 1126 }
+              }
+            },
