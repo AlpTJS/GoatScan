@@ -601,7 +601,6 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
         # xss_urls_file = run_gf(urls_file, 'xss', temp_dir, wordpress_url)
         xss_urls_file = 'temp/gf.txt'
         dalfox_output = run_DalFox(xss_urls_file, enclosed_cookie, temp_dir)
-    
 
         timer(20)
         # SQL Dynamic Analysis
