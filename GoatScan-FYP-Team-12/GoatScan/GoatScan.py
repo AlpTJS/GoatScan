@@ -143,103 +143,103 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
 
     finalResultText = ''
 
-    # for vulnType, file in semgrepOutputFiles.items():
+    for vulnType, file in semgrepOutputFiles.items():
 
-    #     finalResultText += f'-------------------------------------------------------------------------------\n'
-    #     finalResultText += f'Name: \t\t\t{vulnType}\n'
-    #     finalResultText += f'-------------------------------------------------------------------------------\n\n'
+        finalResultText += f'-------------------------------------------------------------------------------\n'
+        finalResultText += f'Name: \t\t\t{vulnType}\n'
+        finalResultText += f'-------------------------------------------------------------------------------\n\n'
 
-    #     with open(file, 'r') as f:
-    #         json_data = json.load(f)
-    #         semgrep_results = json_data.get('results')
+        with open(file, 'r') as f:
+            json_data = json.load(f)
+            semgrep_results = json_data.get('results')
 
-    #     resultNo = 0
+        resultNo = 0
 
-    #     for result in semgrep_results:
+        for result in semgrep_results:
 
-    #         resultNo += 1
-    #         extra = result.get('extra')
+            resultNo += 1
+            extra = result.get('extra')
 
-    #         # Check Rule is not Taint Rule
-    #         if 'dataflow_trace' not in extra:
-    #             # if not extra'dataflow_trace']['taint_source']:
-    #             path = result.get('path')
-    #             start = result.get('start')
-    #             startLine = start['line']
-    #             startColumn = start['col']
-    #             end = result.get('end')
-    #             endLine = end['line']
-    #             endColumn = end['col']
-    #             sourceSinkFunction = extractLines(
-    #                 path, startLine, endLine, startColumn, endColumn)
+            # Check Rule is not Taint Rule
+            if 'dataflow_trace' not in extra:
+                # if not extra'dataflow_trace']['taint_source']:
+                path = result.get('path')
+                start = result.get('start')
+                startLine = start['line']
+                startColumn = start['col']
+                end = result.get('end')
+                endLine = end['line']
+                endColumn = end['col']
+                sourceSinkFunction = extractLines(
+                    path, startLine, endLine, startColumn, endColumn)
 
-    #             finalResultText += f'Result #{resultNo}:\n\n'
-    #             finalResultText += f'Source:\n\tline {startLine}: {sourceSinkFunction}\n\n'
+                finalResultText += f'Result #{resultNo}:\n\n'
+                finalResultText += f'Source:\n\tline {startLine}: {sourceSinkFunction}\n\n'
 
-    #         # Taint Rule
-    #         else:
-    #             message = extra['message']
-    #             metadata = extra['metadata']
-    #             severity = extra['severity']
+            # Taint Rule
+            else:
+                message = extra['message']
+                metadata = extra['metadata']
+                severity = extra['severity']
 
-    #             # Storing Other Results
-    #             finalResultText += f'Result #{resultNo}:\n\n'
-    #             finalResultText += f'Message: {message}\n'
+                # Storing Other Results
+                finalResultText += f'Result #{resultNo}:\n\n'
+                finalResultText += f'Message: {message}\n'
 
-    #             # Getting Source Results
-    #             source = extra['dataflow_trace']['taint_source'][1][0]
-    #             sourceStartLine = source['start']['line']
-    #             sourceEndLine = source['end']['line']
+                # Getting Source Results
+                source = extra['dataflow_trace']['taint_source'][1][0]
+                sourceStartLine = source['start']['line']
+                sourceEndLine = source['end']['line']
 
-    #             sourceStartColumn = source['start']['col']
-    #             sourceEndColumn = source['end']['col']
-    #             sourcePath = source['path']
-    #             sourceFunction = extractLines(
-    #                 sourcePath, sourceStartLine, sourceEndLine, sourceStartColumn, sourceEndColumn)
+                sourceStartColumn = source['start']['col']
+                sourceEndColumn = source['end']['col']
+                sourcePath = source['path']
+                sourceFunction = extractLines(
+                    sourcePath, sourceStartLine, sourceEndLine, sourceStartColumn, sourceEndColumn)
 
-    #             # Storing Source Results
-    #             finalResultText += f'FilePath: {sourcePath}\n'
-    #             if sourceStartLine == sourceEndLine:
-    #                 finalResultText += f'Source:\n\tline {sourceStartLine}: {sourceFunction}\n\n'
-    #             else:
-    #                 finalResultText += f'Source:\n\tline {sourceStartLine} - {sourceEndLine}: {sourceFunction}\n\n'
+                # Storing Source Results
+                finalResultText += f'FilePath: {sourcePath}\n'
+                if sourceStartLine == sourceEndLine:
+                    finalResultText += f'Source:\n\tline {sourceStartLine}: {sourceFunction}\n\n'
+                else:
+                    finalResultText += f'Source:\n\tline {sourceStartLine} - {sourceEndLine}: {sourceFunction}\n\n'
 
-    #             # Getting Intermediate Var Results
+                # Getting Intermediate Var Results
 
-    #             if 'intermediate_vars' in extra['dataflow_trace']:
-    #                 intermediateVars = extra['dataflow_trace']['intermediate_vars']
-    #                 for intermediateVar in intermediateVars:
-    #                     intermediateVarPath = intermediateVar['location']['path']
-    #                     intermediateVarStartLine = intermediateVar['location']['start']['line']
-    #                     intermediateVarEndLine = intermediateVar['location']['end']['line']
-    #                     intermediateVarStartColumn = intermediateVar['location']['start']['col']
-    #                     intermediateVarEndColumn = intermediateVar['location']['end']['col']
-    #                     if not (intermediateVarStartLine == sourceStartLine and intermediateVarEndLine == sourceEndLine):
-    #                         intermediateVarFunction = extractLines(
-    #                             intermediateVarPath, intermediateVarStartLine, intermediateVarEndLine, intermediateVarStartColumn, intermediateVarEndColumn)
-    #                         # Storing Intermediate Variables Results
-    #                         if intermediateVarStartLine == intermediateVarEndLine:
-    #                             finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine}: {intermediateVarFunction}\n'
-    #                         else:
-    #                             finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine} - {intermediateVarEndLine}: {intermediateVarFunction}\n'
+                if 'intermediate_vars' in extra['dataflow_trace']:
+                    intermediateVars = extra['dataflow_trace']['intermediate_vars']
+                    for intermediateVar in intermediateVars:
+                        intermediateVarPath = intermediateVar['location']['path']
+                        intermediateVarStartLine = intermediateVar['location']['start']['line']
+                        intermediateVarEndLine = intermediateVar['location']['end']['line']
+                        intermediateVarStartColumn = intermediateVar['location']['start']['col']
+                        intermediateVarEndColumn = intermediateVar['location']['end']['col']
+                        if not (intermediateVarStartLine == sourceStartLine and intermediateVarEndLine == sourceEndLine):
+                            intermediateVarFunction = extractLines(
+                                intermediateVarPath, intermediateVarStartLine, intermediateVarEndLine, intermediateVarStartColumn, intermediateVarEndColumn)
+                            # Storing Intermediate Variables Results
+                            if intermediateVarStartLine == intermediateVarEndLine:
+                                finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine}: {intermediateVarFunction}\n'
+                            else:
+                                finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine} - {intermediateVarEndLine}: {intermediateVarFunction}\n'
 
-    #             # Getting Sink Results
-    #             sink = extra['dataflow_trace']['taint_sink'][1][0]
-    #             sinkStartLine = sink['start']['line']
-    #             sinkEndLine = sink['end']['line']
-    #             sinkStartColumn = sink['start']['col']
-    #             sinkEndColumn = sink['end']['col']
-    #             sinkPath = sink['path']
-    #             sinkFunction = extractLines(
-    #                 sinkPath, sinkStartLine, sinkEndLine, sinkStartColumn, sinkEndColumn)
+                # Getting Sink Results
+                sink = extra['dataflow_trace']['taint_sink'][1][0]
+                sinkStartLine = sink['start']['line']
+                sinkEndLine = sink['end']['line']
+                sinkStartColumn = sink['start']['col']
+                sinkEndColumn = sink['end']['col']
+                sinkPath = sink['path']
+                sinkFunction = extractLines(
+                    sinkPath, sinkStartLine, sinkEndLine, sinkStartColumn, sinkEndColumn)
 
-    #             # Storing Sink Results
-    #             if sinkStartLine == sinkEndLine:
-    #                 finalResultText += f'\nSink:\n\tline {sinkStartLine}: {sinkFunction}\n'
-    #             else:
-    #                 finalResultText += f'\nSink:\n\tline {sinkStartLine} - {sinkEndLine}: {sinkFunction}\n'
+                # Storing Sink Results
+                if sinkStartLine == sinkEndLine:
+                    finalResultText += f'\nSink:\n\tline {sinkStartLine}: {sinkFunction}\n'
+                else:
+                    finalResultText += f'\nSink:\n\tline {sinkStartLine} - {sinkEndLine}: {sinkFunction}\n'
 
-    #         finalResultText += f'--------------------------------------------------------------------------------\n'
+            finalResultText += f'--------------------------------------------------------------------------------\n'
 
 
     if dynamicOutputFiles:   
