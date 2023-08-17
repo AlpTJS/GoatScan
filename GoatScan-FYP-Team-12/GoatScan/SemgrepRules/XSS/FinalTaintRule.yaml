@@ -62,7 +62,6 @@ rules:
   - pattern: strip_tags(...)  
   - pattern: htmlspecialcharacters(...)
   - pattern: empty(...)
-  - pattern: isset(...)
   - pattern: is_int(...)
   - pattern: sanitize_text_field(...)
   - pattern: wp_strip_all_tags(...)
@@ -81,28 +80,8 @@ rules:
   - pattern: sanitize_key(...)
   - pattern: rawurlencode(...)
   - pattern: filter_input(...)
+  - pattern: json_encode(...)
   
-  # - pattern: $X = $ANYFUNC(...);
-  # - patterns:
-  # - pattern-inside: echo <... $ANYFUNC(...) ...>;
-  # - pattern: $ANYFUNC(...)
-  #  - patterns:
-  #       - focus-metavariable: $PHP
-  #       - pattern: |
-  #           $TAG.$PHP.$ENDTAG
-
-  #       # '<div> random words allowed'
-  #       - metavariable-pattern:
-  #           metavariable: $TAG
-  #           pattern-regex: ('|")<[a-zA-Z0-9]*>.*('|")
-
-  #       # '</div> random words allowed'
-  #       - metavariable-pattern:
-  #           metavariable: $ENDTAG
-  #           pattern-regex: ('|")<\/[a-zA-Z0-9]*>.*('|")
-
-
-
   pattern-sinks:
   - pattern: echo $X;
   - pattern: print $X;
@@ -128,6 +107,7 @@ rules:
   - pattern: system(...)
   - pattern: header(...)
   - pattern: setcookie(...)
+  - pattern: unserialize(...) #Consider removing unserialize
     
 
   metadata:
