@@ -28,82 +28,88 @@ rules:
     confidence: MEDIUM
   mode: taint
   pattern-sanitizers:
-  - pattern-either:
-    - pattern: mysqli_real_escape_string(...)
-    - pattern: real_escape_string(...)
-    - pattern: $MYSQLI->real_escape_string(...)
-  pattern-sources:
-  - patterns:
-    - pattern-either:
-         #User-Input
-        - pattern: $_GET
-        - pattern: $_POST
-        - pattern: $_REQUEST
-        - pattern: $_FILES   
-        - pattern: $_COOKIE
-        - pattern: $_SERVER
-        - pattern: $_SESSION
-        - pattern: $_ENV
-        - pattern: $argc
-        - pattern: $argv
+      - pattern-either:
+          - pattern: mysqli_real_escape_string(...)
+          - pattern: real_escape_string(...)
+          - pattern: $MYSQLI->real_escape_string(...)
+          - pattern: $wpdb->prepare(...)
 
-        # Database Inputs
-        - pattern: 'fetch_all(...)'
-        - pattern: 'fetch_array(...)'
-        - pattern: 'fetch_assoc(...)'
-        - pattern: 'fetch_field(...)'
-        - pattern: 'fetch_objects(...)'
-        - pattern: 'fetch_row(...)'
+    pattern-sources:
+    #User-Input
+    - pattern: $_GET
+    - pattern: $_POST
+    - pattern: $_FILES   
+    - pattern: $_COOKIE
+    - pattern: $_REQUEST    #Contain $_GET, $_COOKIE arrays
+    - pattern: get_headers(...)
+    - pattern: getallheaders(...)
+    - pattern: get_browser(...)
+    - pattern: gethostbyaddr(...)
+    - pattern: $_SERVER   # Contain client's req (headers)
 
-        # File inputs
-        - pattern: bzread(...)
-        - pattern: dio_read(...)
-        - pattern: exif_imagetype(...)
-        - pattern: exif_read_data(...)
-        - pattern: exif_thumbnail(...)
-        - pattern: fgets(...)
-        - pattern: fgetss(...)
-        - pattern: fopen(...)
-        - pattern: file(...)
-        - pattern: file_get_contents(...) 
-        - pattern: fread(...)
-        - pattern: get_meta_tags(...)
-        - pattern: glob(...)
-        - pattern: gzread(...)
-        - pattern: readdir(...)
-        - pattern: read_exif_data(...)
-        - pattern: scandir(...)
-        - pattern: zip_read(...)
-        - pattern: readline(...)
-        - pattern: fgets(...)
-
-        # Other Functions as Inputs
-        - pattern: get_headers(...)
-        - pattern: getallheaders(...)
-        - pattern: get_browser(...)
-        - pattern: getenv(...)
-        - pattern: gethostbyaddr(...)
+    #Objet Oriented User-Input
+    - pattern: $X->get(...)
+    - pattern: $X::get(...)
+    - pattern: $X->path(...) 
+    - pattern: $X::path(...)
+    - pattern: $X->url...)
+    - pattern: $X::url...)
+    - pattern: $X->fullUrl(...)
+    - pattern: $X-::fullUrl(...)
+    - pattern: $X->method(...)
+    - pattern: $X-::method(...)
+    - pattern: $X->header(...)
+    - pattern: $X-::header(...)
+    - pattern: $X->bearerToken(...)
+    - pattern: $X-::bearerToken(...)
+    - pattern: $X->ip(...)
+    - pattern: $X-::ip(...)
+    - pattern: $X-> all(...)
+    - pattern: $X-::all(...)
+    - pattern: $X->collect(...)
+    - pattern: $X-::collect(...)
+    - pattern: $X->input(...)
+    - pattern: $X-::input(...)
+    - pattern: $X->query(...)
+    - pattern: $X-::query(...)
+    - pattern: $X->method(...)
+    - pattern: $X-::method(...)
 
   pattern-sinks:
-  - pattern-either:
-    - patterns:
-      - pattern: |
-          sprintf($SQLSTR, ...)
-      - metavariable-regex:
-          metavariable: $SQLSTR
-          regex: .*\b(?i)(select|delete|insert|create|update|alter|drop)\b.*
-    - patterns:
-      - pattern: |
-          "...{$EXPR}..."
-      - pattern-regex: |
-          .*\b(?i)(select|delete|insert|create|update|alter|drop)\b.*
-    - patterns:
-      - pattern: |
-          "...$EXPR..."
-      - pattern-regex: |
-          .*\b(?i)(select|delete|insert|create|update|alter|drop)\b.*
-    - patterns:
-      - pattern: |
-          "...".$EXPR
-      - pattern-regex: |
-          .*\b(?i)(select|delete|insert|create|update|alter|drop)\b.*
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  sprintf($SQLSTR, ...)
+              - metavariable-regex:
+                  metavariable: $SQLSTR
+                  regex: .*\b(?i)(select|delete|insert|create|update|alter|drop|where)\b.*
+          - patterns:
+              - pattern: |
+                  "...{$EXPR}..."
+              - pattern-regex: >
+                  .*\b(?i)(select|delete|insert|create|update|alter|drop|where)\b.*
+          - patterns:
+              - pattern: |
+                  "...$EXPR..."
+              - pattern-regex: >
+                  .*\b(?i)(select|delete|insert|create|update|alter|drop|where)\b.*
+          - patterns:
+              - pattern: |
+                  "...".$EXPR
+              - pattern-regex: >
+                  .*\b(?i)(select|delete|insert|create|update|alter|drop|where)\b.*
+
+
+    #Pattern Explain
+    # // Pattern 1: Using sprintf with a SQL query string
+    # $SQLSTR = "SELECT * FROM users WHERE username=$userInput";
+    # $query1 = sprintf($SQLSTR, $userInput);
+
+    # // Pattern 2: Using variable within double-quoted string
+    # $query2 = "SELECT * FROM users WHERE username='{$userInput}'";
+
+    # // Pattern 3: Using variable within double-quoted string
+    # $query3 = "SELECT * FROM users WHERE username='$userInput'";
+
+    # // Pattern 4: Concatenating variable with a string
+    # $query4 = "SELECT * FROM users WHERE username='" . $userInput;
