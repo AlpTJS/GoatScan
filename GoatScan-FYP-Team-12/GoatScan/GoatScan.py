@@ -53,6 +53,16 @@ def is_valid_url(input_url):
     return all([parsed_url.scheme, parsed_url.netloc])
 
 
+# Check for "login.php" or "register.php"
+def authFailCheck(root_path):
+    for folder_path, _, file_names in os.walk(root_path):
+        for file_name in file_names:
+            if "login" in file_name.lower() or "register" in file_name.lower():
+                return True
+    return False
+
+
+
 # Retrieve Admin Cookie
 def user_configurations(url, uname, pwd):
     # configurations = {
@@ -136,8 +146,11 @@ def extractLines(filePath, start, end, startCol, endCol):
     return php_code
 
 
+
+
+
 # Generate Static Output File
-def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
+def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
 
   # Iterating through the dictionary and printing key-value pairs
 
@@ -149,95 +162,95 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
         finalResultText += f'Name: \t\t\t{vulnType}\n'
         finalResultText += f'-------------------------------------------------------------------------------\n\n'
 
-        with open(file, 'r') as f:
-            json_data = json.load(f)
-            semgrep_results = json_data.get('results')
+        if (file):
+            with open(file, 'r') as f:
+                json_data = json.load(f)
+                semgrep_results = json_data.get('results')
+            
+            resultNo = 0
+            for result in semgrep_results:
 
-        resultNo = 0
+                resultNo += 1
+                extra = result.get('extra')
 
-        for result in semgrep_results:
+                # Check Rule is not Taint Rule
+                if 'dataflow_trace' not in extra:
+                    # if not extra'dataflow_trace']['taint_source']:
+                    path = result.get('path')
+                    start = result.get('start')
+                    startLine = start['line']
+                    startColumn = start['col']
+                    end = result.get('end')
+                    endLine = end['line']
+                    endColumn = end['col']
+                    sourceSinkFunction = extractLines(
+                        path, startLine, endLine, startColumn, endColumn)
 
-            resultNo += 1
-            extra = result.get('extra')
+                    finalResultText += f'Result #{resultNo}:\n\n'
+                    finalResultText += f'Source:\n\tline {startLine}: {sourceSinkFunction}\n\n'
 
-            # Check Rule is not Taint Rule
-            if 'dataflow_trace' not in extra:
-                # if not extra'dataflow_trace']['taint_source']:
-                path = result.get('path')
-                start = result.get('start')
-                startLine = start['line']
-                startColumn = start['col']
-                end = result.get('end')
-                endLine = end['line']
-                endColumn = end['col']
-                sourceSinkFunction = extractLines(
-                    path, startLine, endLine, startColumn, endColumn)
-
-                finalResultText += f'Result #{resultNo}:\n\n'
-                finalResultText += f'Source:\n\tline {startLine}: {sourceSinkFunction}\n\n'
-
-            # Taint Rule
-            else:
-                message = extra['message']
-                metadata = extra['metadata']
-                severity = extra['severity']
-
-                # Storing Other Results
-                finalResultText += f'Result #{resultNo}:\n\n'
-                finalResultText += f'Message: {message}\n'
-
-                # Getting Source Results
-                source = extra['dataflow_trace']['taint_source'][1][0]
-                sourceStartLine = source['start']['line']
-                sourceEndLine = source['end']['line']
-
-                sourceStartColumn = source['start']['col']
-                sourceEndColumn = source['end']['col']
-                sourcePath = source['path']
-                sourceFunction = extractLines(
-                    sourcePath, sourceStartLine, sourceEndLine, sourceStartColumn, sourceEndColumn)
-
-                # Storing Source Results
-                finalResultText += f'FilePath: {sourcePath}\n'
-                if sourceStartLine == sourceEndLine:
-                    finalResultText += f'Source:\n\tline {sourceStartLine}: {sourceFunction}\n\n'
+                # Taint Rule
                 else:
-                    finalResultText += f'Source:\n\tline {sourceStartLine} - {sourceEndLine}: {sourceFunction}\n\n'
+                    message = extra['message']
+                    metadata = extra['metadata']
+                    severity = extra['severity']
 
-                # Getting Intermediate Var Results
+                    # Storing Other Results
+                    finalResultText += f'Result #{resultNo}:\n\n'
+                    finalResultText += f'Message: {message}\n'
 
-                if 'intermediate_vars' in extra['dataflow_trace']:
-                    intermediateVars = extra['dataflow_trace']['intermediate_vars']
-                    for intermediateVar in intermediateVars:
-                        intermediateVarPath = intermediateVar['location']['path']
-                        intermediateVarStartLine = intermediateVar['location']['start']['line']
-                        intermediateVarEndLine = intermediateVar['location']['end']['line']
-                        intermediateVarStartColumn = intermediateVar['location']['start']['col']
-                        intermediateVarEndColumn = intermediateVar['location']['end']['col']
-                        if not (intermediateVarStartLine == sourceStartLine and intermediateVarEndLine == sourceEndLine):
-                            intermediateVarFunction = extractLines(
-                                intermediateVarPath, intermediateVarStartLine, intermediateVarEndLine, intermediateVarStartColumn, intermediateVarEndColumn)
-                            # Storing Intermediate Variables Results
-                            if intermediateVarStartLine == intermediateVarEndLine:
-                                finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine}: {intermediateVarFunction}\n'
-                            else:
-                                finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine} - {intermediateVarEndLine}: {intermediateVarFunction}\n'
+                    # Getting Source Results
+                    source = extra['dataflow_trace']['taint_source'][1][0]
+                    sourceStartLine = source['start']['line']
+                    sourceEndLine = source['end']['line']
 
-                # Getting Sink Results
-                sink = extra['dataflow_trace']['taint_sink'][1][0]
-                sinkStartLine = sink['start']['line']
-                sinkEndLine = sink['end']['line']
-                sinkStartColumn = sink['start']['col']
-                sinkEndColumn = sink['end']['col']
-                sinkPath = sink['path']
-                sinkFunction = extractLines(
-                    sinkPath, sinkStartLine, sinkEndLine, sinkStartColumn, sinkEndColumn)
+                    sourceStartColumn = source['start']['col']
+                    sourceEndColumn = source['end']['col']
+                    sourcePath = source['path']
+                    sourceFunction = extractLines(
+                        sourcePath, sourceStartLine, sourceEndLine, sourceStartColumn, sourceEndColumn)
 
-                # Storing Sink Results
-                if sinkStartLine == sinkEndLine:
-                    finalResultText += f'\nSink:\n\tline {sinkStartLine}: {sinkFunction}\n'
-                else:
-                    finalResultText += f'\nSink:\n\tline {sinkStartLine} - {sinkEndLine}: {sinkFunction}\n'
+                    # Storing Source Results
+                    finalResultText += f'FilePath: {sourcePath}\n'
+                    if sourceStartLine == sourceEndLine:
+                        finalResultText += f'Source:\n\tline {sourceStartLine}: {sourceFunction}\n\n'
+                    else:
+                        finalResultText += f'Source:\n\tline {sourceStartLine} - {sourceEndLine}: {sourceFunction}\n\n'
+
+                    # Getting Intermediate Var Results
+
+                    if 'intermediate_vars' in extra['dataflow_trace']:
+                        intermediateVars = extra['dataflow_trace']['intermediate_vars']
+                        for intermediateVar in intermediateVars:
+                            intermediateVarPath = intermediateVar['location']['path']
+                            intermediateVarStartLine = intermediateVar['location']['start']['line']
+                            intermediateVarEndLine = intermediateVar['location']['end']['line']
+                            intermediateVarStartColumn = intermediateVar['location']['start']['col']
+                            intermediateVarEndColumn = intermediateVar['location']['end']['col']
+                            if not (intermediateVarStartLine == sourceStartLine and intermediateVarEndLine == sourceEndLine):
+                                intermediateVarFunction = extractLines(
+                                    intermediateVarPath, intermediateVarStartLine, intermediateVarEndLine, intermediateVarStartColumn, intermediateVarEndColumn)
+                                # Storing Intermediate Variables Results
+                                if intermediateVarStartLine == intermediateVarEndLine:
+                                    finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine}: {intermediateVarFunction}\n'
+                                else:
+                                    finalResultText += f'Intermediate Var:\n\tline {intermediateVarStartLine} - {intermediateVarEndLine}: {intermediateVarFunction}\n'
+
+                    # Getting Sink Results
+                    sink = extra['dataflow_trace']['taint_sink'][1][0]
+                    sinkStartLine = sink['start']['line']
+                    sinkEndLine = sink['end']['line']
+                    sinkStartColumn = sink['start']['col']
+                    sinkEndColumn = sink['end']['col']
+                    sinkPath = sink['path']
+                    sinkFunction = extractLines(
+                        sinkPath, sinkStartLine, sinkEndLine, sinkStartColumn, sinkEndColumn)
+
+                    # Storing Sink Results
+                    if sinkStartLine == sinkEndLine:
+                        finalResultText += f'\nSink:\n\tline {sinkStartLine}: {sinkFunction}\n'
+                    else:
+                        finalResultText += f'\nSink:\n\tline {sinkStartLine} - {sinkEndLine}: {sinkFunction}\n'
 
             finalResultText += f'--------------------------------------------------------------------------------\n'
 
@@ -248,6 +261,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
             finalResultText += f'Name: \t\t\t{dynamicTool}\n'
             finalResultText += f'-------------------------------------------------------------------------------\n\n'
             
+            #Dalfox Output
             if dynamicTool == 'DALFOX (DYNAMIC XSS)':
                 
                 resultNo = 0
@@ -272,7 +286,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
                         finalResultText += f'--------------------------------------------------------------------------------\n'
      
             else:
-                #SQLMAP folder
+                #SQLMAP Output
                 if os.path.exists(file):
                     for root, dirs, files in os.walk(file):
                         resultNo = 0
@@ -317,10 +331,6 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
                                     finalResultText += f'--------------------------------------------------------------------------------\n'
                                         
 
-                
-        
-
-
     # Write all the results to the file
     finalResult = os.path.join(output_dir, f'FinalResults.txt')
     with open(finalResult, 'w') as file:
@@ -332,7 +342,6 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles, output_dir):
 # <<<Tools>>>
 
 # <<<Semgrep Function>>>
-
 def run_SemGrep(scan_target, type, rule_directory, temp_dir):
 
     # rule_directory = XssSemgrepRules / SQLiSemgrepRules
@@ -352,40 +361,21 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
 
     try:
         subprocess.run(semgrep_command, check=True)
+        return semgrep_output
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Semgrep:", e)
 
-    return semgrep_output
-
-
-# <<<SnykFunction>>>
-
-def run_Snyk(scan_target, type):
-    snyk_command = ["snyk", "code", "test", scan_target]
-    process = subprocess.Popen(
-        snyk_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
-
-    temp_dir = os.path.join(os.getcwd(), 'temp')
-    os.makedirs(temp_dir, exist_ok=True)
-
-    # Write the stdout (snyk's output) to a file in the temp_dir
-    result_file = os.path.join(temp_dir, f'{type}_snyk.txt')
-    with open(result_file, 'wb') as f:
-        f.write(stdout)
-
-    print(f"{type} Snyk results are stored in {result_file}")
-    return result_file
+    
 
 
 # <<<Wget Function>>>
-
 # If error occurs, error will be stored in the text file instead of being outputed
 
 # Command Equalvilant: wget --spider --header "Cookie: wordpress_81650aaabe3befdc917288ce56482dd7=root%7C1689239527%7CfpSWHdgOvw21tzHILaUi20F4e0vPAHfjC7MXaK4Zqml%7C1720138b4b32f865eeeb1d1389a57b73d779e3858bce545d6a1f4ab3ce80e422; wp-settings-1=libraryContent%3Dbrowse%26posts_list_mode%3Dlist%26editor%3Dtinymce%26mfold%3Do; wp-settings-time-1=1688981179; PHPSESSID=4m612sbeqf2vohkcqi5atc70v2; wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_81650aaabe3befdc917288ce56482dd7=root%7C1689239527%7CfpSWHdgOvw21tzHILaUi20F4e0vPAHfjC7MXaK4Zqml%7C83f70fa1981c3277007503c62b08c135257b08e36a5aa527fbb681a010c880b2"
 # -r http://157.245.144.50/wp-admin 2>&1 | grep -E -o "(http|https)://[a-zA-Z0-9./?=_-]*"| sort | uniq > temp/urls3.txt
 
-def run_wget(url, cookie, temp_dir):
+def run_wget(url, cookie):
 
     #Ensure url ends with '/'
     if not url.endswith('/'):
@@ -424,35 +414,30 @@ def run_wget(url, cookie, temp_dir):
 
     try:
         subprocess.run(full_command, shell=True, check=True, executable="/bin/bash")
-
+        print(f"Wget URLs are stored in {urls_file}")
+        # shutil.rmtree(url) #remove wget directory created
+        return (urls_file)
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Wget:", e)
 
-
-
-
-    print(f"Wget URLs are stored in {urls_file}")
-    return (urls_file)
-
-
+    
 # <<<Gf Function>>>
 # Command Equalvilant: cat urls.txt | gf xss | eval sed 's/temp\\///' | eval sort -u > gf-output.txt
 
-def run_gf(urls_file, type, temp_dir, url):
+def run_gf(urls_file, type):
     # Run gf for {vulnerability_type} patterns
 
-    params_urls_file = 'temp/gf.txt'
+    params_urls_file = f'temp/{type}gf.txt'
     print (params_urls_file)
-
     try:
-        subprocess.run(
-            f"cat {urls_file} | gf {type} > {params_urls_file}", shell=True, check=True)
+        subprocess.run(f"cat {urls_file} | gf {type} > {params_urls_file}", shell=True, check=True)
+        print(f"Gf {type} Urls with parameters are stored in {params_urls_file}")
+        return (params_urls_file)
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running gf:", e)
-
-    print(f"Gf {type} Urls with parameters are stored in {params_urls_file}")
-    return (params_urls_file)
-
+    
 
 # <<<Dalfox Function>>>
 def run_DalFox(param_urls, cookie, temp_dir):
@@ -473,11 +458,14 @@ def run_DalFox(param_urls, cookie, temp_dir):
 
     try:
         result = subprocess.run(dalfox_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        print(f"Dalfox resutls is being stored in {dalfox_output}")
+        return (dalfox_output)
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Dalfox:", e)
 
-    print(f"Dalfox resutls is being stored in {dalfox_output}")
-    return (dalfox_output)
+    
+    
 
 
 def run_sqlmap(param_urls, cookie, temp_dir):
@@ -498,10 +486,12 @@ def run_sqlmap(param_urls, cookie, temp_dir):
         
     try:
         subprocess.run(sqlmap_command, check=True)
+        return (sqlmap_dir)
+    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running SQLMap:", e)
 
-    return (sqlmap_dir)
+   
 
 # End of Tools........
 
@@ -512,57 +502,56 @@ def scanning_command(args):
     wordpress_url = args.url
     user_name = args.uname
     password = args.pwd
-    output = args.output
+    output_dir = args.output
     cookie = args.cookie
     dynamicOutputFiles = False
-
-    # Create "vulnerability-scanner/temp" directory
     current_dir = os.getcwd()
     temp_dir = os.path.join(current_dir, 'temp')
 
+    if (os.path.isdir(output_dir)):
 
-    output_dir = os.path.join(current_dir, 'output')
-    # Create the temp directory if it doesn't exist
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-     # Create the output directory if it doesn't exist
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)     
+        # Create the temp directory if it doesn't exist
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
 
-    # XSS Static Analysis
-    xssOutput = run_SemGrep(plugin_folder, 'XSS',
-                            'SemgrepRules/XSS', temp_dir)
-    timer(20)
+        # Create the output directory if it doesn't exist
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)     
 
-    # SQL Static Analysis
-    sqliOutput = run_SemGrep(plugin_folder, 'SQLi',
-                             'SemgrepRules/SQLI', temp_dir)
-    timer(20)
+        # XSS Static Analysis
+        xssOutput = run_SemGrep(plugin_folder, 'XSS',
+                                'SemgrepRules/XSS', temp_dir)
 
-    # Command Injection Static Analysis
-    cmdiOutput = run_SemGrep(plugin_folder, 'Cmdi',
-                             f'SemgrepRules/CmdI', temp_dir)
+        # SQL Static Analysis
+        sqliOutput = run_SemGrep(plugin_folder, 'SQLi',
+                                'SemgrepRules/SQLI', temp_dir)
 
-    timer(20)
-    # Broken Authentication Static Analysis
-    #ifAuthFailCheck not yet implemented
-    AuthFailOutput = run_SemGrep(plugin_folder, 'AuthFail',
-                                    'SemgrepRules/AuthFail', temp_dir)
+        # Command Injection Static Analysis
+        cmdiOutput = run_SemGrep(plugin_folder, 'Cmdi',
+                                f'SemgrepRules/CmdI', temp_dir)
 
-    semgrepOutputFiles = {'XSS': xssOutput,
-                          'SQLI': sqliOutput,
-                          'CmdI': cmdiOutput,
-                          'AuthFail': AuthFailOutput
-                          }
+        if (authFailCheck(plugin_folder)):
+            # Authentication Failure Static Analysis
+            AuthFailOutput = run_SemGrep(plugin_folder, 'AuthFail',
+                                            'SemgrepRules/AuthFail', temp_dir)
+            
+        else:
+            AuthFailOutput = False
 
-    semgrepOutputFiles = False
+        semgrepOutputFiles = {'XSS': xssOutput,
+                            'SQLI': sqliOutput,
+                            'CmdI': cmdiOutput,
+                            'AuthFail': AuthFailOutput
+                            }
 
-    if wordpress_url:
-        dynamicOutputFiles = dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir)
-        generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)
-    else:
-        generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)    
+        if wordpress_url:
+            dynamicOutputFiles = dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir)
+            generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)
+        else:
+            generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)    
+    
 
+    else: print("Invalid Output Directory Argument, please enter a valid input.")
     
 # <<<Dynamic Scan Functions>>>
 def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
@@ -576,9 +565,13 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
         cookie = wp_login(user_configurations) 
         print('Scanning for Authenticated Pages')
 
+        if not cookie.startswith("'") and not cookie.endswith("'"):
+            cookie = f"'{cookie}'"
+   
     elif cookie:
-        #validate cookie
-        print('valid cookie')
+        if not cookie.startswith("'") and not cookie.endswith("'"):
+            cookie = f"'{cookie}'"
+      
     else:
         cookie=False
 
@@ -586,23 +579,17 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
     if is_valid_url(wordpress_url):
         print("validurl")
 
-        if not cookie.startswith("'") and not cookie.endswith("'"):
-            enclosed_cookie = f"'{cookie}'"
-
-        else:
-            enclosed_cookie =cookie
-
         # Website Crawling
-        urls_file = run_wget(wordpress_url, enclosed_cookie, temp_dir)
+        urls_file = run_wget(wordpress_url, cookie)
 
         # XSS Dynamic Analysis
-        xss_urls_file = run_gf(urls_file, 'xss', temp_dir, wordpress_url)
-        dalfox_output = run_DalFox(xss_urls_file, enclosed_cookie, temp_dir)
-        timer(20)
+        xss_urls_file = run_gf(urls_file, 'xss')
+        dalfox_output = run_DalFox(xss_urls_file, cookie, temp_dir)
+        # timer(20)
         
         # SQL Dynamic Analysis
-        sqli_urls_file = run_gf(urls_file, 'sql',temp_dir, wordpress_url)
-        sqlmap_output = run_sqlmap(sqli_urls_file, enclosed_cookie, temp_dir)
+        sqli_urls_file = run_gf(urls_file, 'xss')
+        sqlmap_output = run_sqlmap(sqli_urls_file, cookie, temp_dir)
 
         dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
                               'SQLMAP (DYNAMIC SQLI)':sqlmap_output}
@@ -611,7 +598,7 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
 
     else:
         print("Invalid URL, please enter a valid input.")
-
+        return False
 
 # <<< Argparser module >>>
 # var parser defines the program's cmd-line interface
