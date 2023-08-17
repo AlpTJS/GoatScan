@@ -252,7 +252,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                     else:
                         finalResultText += f'\nSink:\n\tline {sinkStartLine} - {sinkEndLine}: {sinkFunction}\n'
 
-            finalResultText += f'--------------------------------------------------------------------------------\n'
+                finalResultText += f'--------------------------------------------------------------------------------\n'
 
 
     if dynamicOutputFiles:   
@@ -327,8 +327,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                                     for inj_point in injection_points:
                                         finalResultText += '\n\tType: '+ inj_point['type']+'\n'
                                         finalResultText +='\n\tPayload: '+ inj_point['payload']+'\n\n'
-                                    
-                                    finalResultText += f'--------------------------------------------------------------------------------\n'
+                                        finalResultText += f'--------------------------------------------------------------------------------\n'
                                         
 
     # Write all the results to the file
