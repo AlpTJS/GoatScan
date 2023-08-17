@@ -507,11 +507,11 @@ def scanning_command(args):
     current_dir = os.getcwd()
     temp_dir = os.path.join(current_dir, 'temp')
 
-    if (os.path.isdir(output_dir)):
+    # Create the temp directory if it doesn't exist
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
 
-        # Create the temp directory if it doesn't exist
-        if not os.path.exists(temp_dir):
-            os.makedirs(temp_dir)
+    if (os.path.isdir(output_dir)):
 
         # Create the output directory if it doesn't exist
         if not os.path.exists(output_dir):
