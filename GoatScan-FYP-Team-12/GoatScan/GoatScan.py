@@ -11,7 +11,6 @@ import requests
 import json
 # New imports i added for gf/wget
 from urllib.parse import urlparse
-import re
 import json
 import shutil
 import sys
@@ -351,9 +350,6 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
     semgrep_command = ["semgrep", "--config", rule_directory,
                        scan_target, "--json", "-o", f"{semgrep_output}"]
 
-    # process = subprocess.Popen(semgrep_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # stdout, stderr = process.communicate()
-
     loading_frames = ["Loading...", "Loading."]
 
     try:
@@ -364,9 +360,6 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
 
         process = subprocess.Popen(
             semgrep_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        # process=subprocess.run(semgrep_command, check=True)
-        
 
         while process.poll() is None:  # Check if the process is still running
             # Cycle through frames
@@ -392,11 +385,6 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
     
 
 # <<<Wget Function>>>
-# If error occurs, error will be stored in the text file instead of being outputed
-
-# Command Equalvilant: wget --spider --header "Cookie: wordpress_81650aaabe3befdc917288ce56482dd7=root%7C1689239527%7CfpSWHdgOvw21tzHILaUi20F4e0vPAHfjC7MXaK4Zqml%7C1720138b4b32f865eeeb1d1389a57b73d779e3858bce545d6a1f4ab3ce80e422; wp-settings-1=libraryContent%3Dbrowse%26posts_list_mode%3Dlist%26editor%3Dtinymce%26mfold%3Do; wp-settings-time-1=1688981179; PHPSESSID=4m612sbeqf2vohkcqi5atc70v2; wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_81650aaabe3befdc917288ce56482dd7=root%7C1689239527%7CfpSWHdgOvw21tzHILaUi20F4e0vPAHfjC7MXaK4Zqml%7C83f70fa1981c3277007503c62b08c135257b08e36a5aa527fbb681a010c880b2"
-# -r http://157.245.144.50/wp-admin 2>&1 | grep -E -o "(http|https)://[a-zA-Z0-9./?=_-]*"| sort | uniq > temp/urls3.txt
-
 def run_wget(url, cookie):
 
     #Ensure url ends with '/'
@@ -416,7 +404,6 @@ def run_wget(url, cookie):
         ]
 
     else:
-        # Have not check this command
         wget_command = [
         'wget', 
         '--spider',
@@ -442,11 +429,9 @@ def run_wget(url, cookie):
 
     
 # <<<Gf Function>>>
-# Command Equalvilant: cat urls.txt | gf xss | eval sed 's/temp\\///' | eval sort -u > gf-output.txt
 
 def run_gf(urls_file, type):
     # Run gf for {vulnerability_type} patterns
-
     params_urls_file = f'temp/{type}gf.txt'
     print (params_urls_file)
     try:
@@ -470,7 +455,6 @@ def run_DalFox(param_urls, cookie, temp_dir):
         print(f"File '{dalfox_output}' deleted successfully.")
 
     if cookie: 
-        # dalfox_command = ['dalfox', 'file', param_urls, '--cookie', 'security=low; PHPSESSID=3959afr5laqcoe5u10ee4j6qna', '--skip-bav', '--format', 'json', '-o', dalfox_output]   
         dalfox_command = ['dalfox', 'file', param_urls, '--cookie', cookie, '--skip-bav', '--format', 'json', '-o', dalfox_output]   
     else: 
         dalfox_command = ['dalfox', 'file', param_urls, '--skip-bav', '--format', 'json', '-o', dalfox_output]        
@@ -485,22 +469,16 @@ def run_DalFox(param_urls, cookie, temp_dir):
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Dalfox:", e)
 
-    
-    
-
 
 def run_sqlmap(param_urls, cookie, temp_dir):
-     
     # sqlmap_dir = temp_dir + "/sqlmap"
     sqlmap_dir= 'temp/sqlmap'
-
     if os.path.exists(sqlmap_dir):
         shutil.rmtree(sqlmap_dir)
         print(f"Folder '{sqlmap_dir}' deleted successfully.")
         print(cookie)
 
     if cookie: 
-        # sqlmap_command = ["sqlmap", "-m", param_urls, "--cookie",'security=low; PHPSESSID=3959afr5laqcoe5u10ee4j6qna',"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
         sqlmap_command=["sqlmap", "-m", param_urls, "--cookie", cookie ,"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
     else:
         sqlmap_command = ["sqlmap", "-m", param_urls, "--batch","--risk","2","--level","1","--threads", "10", "--output-dir", sqlmap_dir]
@@ -533,15 +511,11 @@ def run_sqlmap(param_urls, cookie, temp_dir):
         print('SQLMap command completed.')
         return (sqlmap_dir)
 
-        # subprocess.run(sqlmap_command, check=True)
-        # return (sqlmap_dir)
-    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running SQLMap:", e)
 
-   
-
 # End of Tools........
+
 
 # <<<Static Scan Functions>>>
 def scanning_command(args):
@@ -582,7 +556,6 @@ def scanning_command(args):
             # Authentication Failure Static Analysis
             AuthFailOutput = run_SemGrep(plugin_folder, 'AuthFail',
                                             'SemgrepRules/AuthFail', temp_dir)
-            
         else:
             AuthFailOutput = False
 
@@ -598,13 +571,20 @@ def scanning_command(args):
         else:
             generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)    
     
-
     else: print("Invalid Output Directory Argument, please enter a valid input.")
     
 # <<<Dynamic Scan Functions>>>
 def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
 
     print('Starting Dynamic Scan...')
+
+    # Define the path to the shell script
+    shell_script_path = 'InstallPackages/setup_go_env.sh' 
+    # Set the execute permission on the shell script file
+    os.chmod(shell_script_path, 0o755)
+    # Execute the shell script
+    subprocess.run(['bash', shell_script_path], check=True)
+
 
     if (user_name and password and not cookie):
         # Get Cookie with User Config
@@ -639,11 +619,8 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
 
         dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
                               'SQLMAP (DYNAMIC SQLI)':sqlmap_output}
-        
-        
-        
+          
         return dynamicOutputFiles
-
     else:
         print("Invalid URL, please enter a valid input.")
         return False
@@ -669,9 +646,9 @@ scanning_parser.add_argument(
     '-p', '--pwd', dest='pwd', help='Your password for your wordpress website')
 scanning_parser.add_argument(
     '-c', '--cookie', dest='cookie', help='Cookie for your website')
+
 # function to call when "Scanning" is used
 scanning_parser.set_defaults(func=scanning_command)
-
 
 args = parser.parse_args()
 
