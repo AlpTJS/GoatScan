@@ -9,7 +9,7 @@ import sys
 def install_dependencies():
 
     packages = ['pyfiglet', 'halo', 'inquirer', 'colored','semgrep']
-    other_tools = ['gf', 'wget','snyk']
+    other_tools = ['go','gf','wget','dalfox','sqlmap']
     print("Installing required dependencies...")
 
     for package in packages:
@@ -49,7 +49,7 @@ def is_tool_installed(tool_name):
     
     except subprocess.CalledProcessError:
         return True
-    
+
 
 # Install a tool using package manager
 def install_tool(tool_name):
@@ -57,23 +57,31 @@ def install_tool(tool_name):
 
         if(tool_name =='gf'):
             # Define the path to the shell script
-            shell_script_path = '..\scanner\dynamicTools\Install_gf.sh' #Might be wrong (Double check)
+            shell_script_path = 'Install_gf.sh' 
             # Set the execute permission on the shell script file
             os.chmod(shell_script_path, 0o755)
             # Execute the shell script
             subprocess.run(['bash', shell_script_path], check=True)
-            print("Please restart your shell to start using the gf tool")
 
+        elif(tool_name =='dalfox'):
+            # Define the path to the shell script
+            shell_script_path = 'Install_dalfox.sh'
+            # Set the execute permission on the shell script file
+            os.chmod(shell_script_path, 0o755)
+            # Execute the shell script
+            subprocess.run(['bash', shell_script_path], check=True)
+            
         else:
-            subprocess.check_call(['apt', 'install', '-y', tool_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            if (tool_name == 'go'):
+                tool_name ='golang'
+                
+            subprocess.check_call(['sudo','apt', 'update'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call(['sudo','apt', 'install', '-y', tool_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         
         print(f"Successfully installed {tool_name}")
 
     except subprocess.CalledProcessError:
         print(f"Failed to install {tool_name}")
-
-
-
 
 
 #Start running workingon.py 
