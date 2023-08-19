@@ -1,8 +1,6 @@
 rules:
   - id: tainted-command-injection
-    message: Untrusted input might be injected into a command executed by the
-      application, which can lead to a command injection vulnerability. An
-      attacker can execute arbitrary commands, potentially gaining complete
+    message: An attacker can execute arbitrary commands, potentially gaining complete
       control of the system. To prevent this vulnerability, avoid executing OS
       commands with user input. If this is unavoidable, validate and sanitize
       the user input, and use safe methods for executing the commands. In PHP,
@@ -48,35 +46,6 @@ rules:
       - pattern: get_browser(...)
       - pattern: gethostbyaddr(...)
       - pattern: $_SERVER   # Contain client's req (headers)
-
-      #Objet Oriented User-Input
-      # - pattern: $X->get(...)
-      # - pattern: $X::get(...)
-      # - pattern: $X->path(...) 
-      # - pattern: $X::path(...)
-      # - pattern: $X->url(...)
-      # - pattern: $X::url(...)
-      # - pattern: $X->fullUrl(...)
-      # - pattern: $X::fullUrl(...)
-      # - pattern: $X->method(...)
-      # - pattern: $X::method(...)
-      # - pattern: $X->header(...)
-      # - pattern: $X::header(...)
-      # - pattern: $X->bearerToken(...)
-      # - pattern: $X::bearerToken(...)
-      # - pattern: $X->ip(...)
-      # - pattern: $X::ip(...)
-      # - pattern: $X-> all(...)
-      # - pattern: $X::all(...)
-      # - pattern: $X->collect(...)
-      # - pattern: $X::collect(...)
-      # - pattern: $X->input(...)
-      # - pattern: $X::input(...)
-      # - pattern: $X->query(...)
-      # - pattern: $X::query(...)
-      # - pattern: $X->method(...)
-      # - pattern: $X::method(...)
-
     pattern-sanitizers:
       - pattern: escapeshellarg(...)
       - pattern: escapeshellcmd(...)
