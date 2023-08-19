@@ -46,7 +46,6 @@ rules:
     # - pattern: $X::query(...)
     # - pattern: $X->method(...)
     # - pattern: $X::method(...)
-       
     # - pattern: $_SESSION  # If user controlled data in session
     # # File inputs
     # - pattern: bzread(...)  #if file name based on user input
@@ -88,6 +87,7 @@ rules:
   - pattern: filter_input(...)
   - pattern: json_encode(...)
   - pattern: intval(...)
+  
   
   pattern-sinks:
   #Output
