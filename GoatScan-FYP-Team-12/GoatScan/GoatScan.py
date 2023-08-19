@@ -3,9 +3,7 @@
 import argparse
 import os
 import time
-import pathlib
 from termcolor import colored
-import inquirer
 import pyfiglet
 from halo import Halo
 import subprocess
@@ -16,6 +14,7 @@ from urllib.parse import urlparse
 import re
 import json
 import shutil
+import sys
 
 # =============Install required dependencies=============
 
@@ -65,11 +64,7 @@ def authFailCheck(root_path):
 
 # Retrieve Admin Cookie
 def user_configurations(url, uname, pwd):
-    # configurations = {
-    #     "ipaddr": "157.245.144.50",
-    #     "username": "root",
-    #     "password": "1qwer%$#@!"
-    # }
+
     configurations = {
         "ipaddr": f"{url}",
         "username": f"{uname}",
@@ -126,7 +121,6 @@ def wp_login(userInputs):
 
 # Extract specific lines & cols from php/jsonn file
 def extractLines(filePath, start, end, startCol, endCol):
-
     with open(filePath, 'r') as file:
         lines = file.readlines()
 
@@ -144,7 +138,6 @@ def extractLines(filePath, start, end, startCol, endCol):
     # Join the lines to get the PHP code
     php_code = ''.join(code_lines)
     return php_code
-
 
 
 
@@ -198,6 +191,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                     # Storing Other Results
                     finalResultText += f'Result #{resultNo}:\n\n'
                     finalResultText += f'Message: {message}\n'
+                    finalResultText += f'Severity: {severity}\n'
 
                     # Getting Source Results
                     source = extra['dataflow_trace']['taint_source'][1][0]
@@ -207,6 +201,8 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                     sourceStartColumn = source['start']['col']
                     sourceEndColumn = source['end']['col']
                     sourcePath = source['path']
+                    
+
                     sourceFunction = extractLines(
                         sourcePath, sourceStartLine, sourceEndLine, sourceStartColumn, sourceEndColumn)
 
@@ -358,15 +354,42 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
     # process = subprocess.Popen(semgrep_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # stdout, stderr = process.communicate()
 
+    loading_frames = ["Loading...", "Loading."]
+
     try:
-        subprocess.run(semgrep_command, check=True)
+        loading_frame_index = 0  # Start with the first frame
+        loading_animation = loading_frames[loading_frame_index]
+        # Print the first frame without newline
+        print(loading_animation, end="", flush=True)
+
+        process = subprocess.Popen(
+            semgrep_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # process=subprocess.run(semgrep_command, check=True)
+        
+
+        while process.poll() is None:  # Check if the process is still running
+            # Cycle through frames
+            loading_frame_index = (
+                loading_frame_index + 1) % len(loading_frames)
+            loading_animation = loading_frames[loading_frame_index]
+
+            # Move cursor back and overwrite current line
+            sys.stdout.write("\r" + loading_animation)
+            sys.stdout.flush()
+
+            # Adjust the sleep time as needed (less frequent updates)
+            time.sleep(0.5)
+
+        # Clear the loading animation line and print completion message
+        sys.stdout.write("\r" + " " * len(loading_animation) + "\r")
+        print(f'Semgrep {type} command completed.')
         return semgrep_output
-    
+
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Semgrep:", e)
 
     
-
 
 # <<<Wget Function>>>
 # If error occurs, error will be stored in the text file instead of being outputed
@@ -382,8 +405,6 @@ def run_wget(url, cookie):
 
     #Wget output
     urls_file = 'temp/wget.txt'
-    print(urls_file)
-
 
     if not cookie:
         print('no wget cookie')
@@ -396,7 +417,6 @@ def run_wget(url, cookie):
 
     else:
         # Have not check this command
-        
         wget_command = [
         'wget', 
         '--spider',
@@ -456,8 +476,10 @@ def run_DalFox(param_urls, cookie, temp_dir):
         dalfox_command = ['dalfox', 'file', param_urls, '--skip-bav', '--format', 'json', '-o', dalfox_output]        
 
     try:
+        print("Dalfox running. Dynamic scanning in progress. Please be patient.")
         result = subprocess.run(dalfox_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        print(f"Dalfox resutls is being stored in {dalfox_output}")
+        print(f"Dalfox temporary results is stored in {dalfox_output}")
+        
         return (dalfox_output)
     
     except subprocess.CalledProcessError as e:
@@ -482,10 +504,37 @@ def run_sqlmap(param_urls, cookie, temp_dir):
         sqlmap_command=["sqlmap", "-m", param_urls, "--cookie", cookie ,"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
     else:
         sqlmap_command = ["sqlmap", "-m", param_urls, "--batch","--risk","2","--level","1","--threads", "10", "--output-dir", sqlmap_dir]
-        
+    
+    loading_frames = ["Loading...", "Loading."]
     try:
-        subprocess.run(sqlmap_command, check=True)
+        loading_frame_index = 0  # Start with the first frame
+        loading_animation = loading_frames[loading_frame_index]
+
+        # Print the first frame without newline
+        print(loading_animation, end="", flush=True)
+        process = subprocess.Popen(
+            sqlmap_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        while process.poll() is None:  # Check if the process is still running
+            # Cycle through frames
+            loading_frame_index = (
+                loading_frame_index + 1) % len(loading_frames)
+            loading_animation = loading_frames[loading_frame_index]
+
+            # Move cursor back and overwrite current line
+            sys.stdout.write("\r" + loading_animation)
+            sys.stdout.flush()
+
+            # Adjust the sleep time as needed (less frequent updates)
+            time.sleep(0.5)
+
+        # Clear the loading animation line and print completion message
+        sys.stdout.write("\r" + " " * len(loading_animation) + "\r")
+        print('SQLMap command completed.')
         return (sqlmap_dir)
+
+        # subprocess.run(sqlmap_command, check=True)
+        # return (sqlmap_dir)
     
     except subprocess.CalledProcessError as e:
         print("An error occurred while running SQLMap:", e)
@@ -555,12 +604,11 @@ def scanning_command(args):
 # <<<Dynamic Scan Functions>>>
 def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
 
-    print('indynamic')
+    print('Starting Dynamic Scan...')
 
     if (user_name and password and not cookie):
         # Get Cookie with User Config
         user_configurations = (wordpress_url, user_name, password)
-
         cookie = wp_login(user_configurations) 
         print('Scanning for Authenticated Pages')
 
@@ -576,7 +624,6 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
 
     # Check if input is an url
     if is_valid_url(wordpress_url):
-        print("validurl")
 
         # Website Crawling
         urls_file = run_wget(wordpress_url, cookie)
@@ -584,14 +631,16 @@ def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
         # XSS Dynamic Analysis
         xss_urls_file = run_gf(urls_file, 'xss')
         dalfox_output = run_DalFox(xss_urls_file, cookie, temp_dir)
-        # timer(20)
         
+
         # SQL Dynamic Analysis
-        sqli_urls_file = run_gf(urls_file, 'xss')
+        sqli_urls_file = run_gf(urls_file, 'sql')
         sqlmap_output = run_sqlmap(sqli_urls_file, cookie, temp_dir)
 
         dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
                               'SQLMAP (DYNAMIC SQLI)':sqlmap_output}
+        
+        
         
         return dynamicOutputFiles
 
