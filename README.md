@@ -22,19 +22,29 @@ Wget2 - Version 2.1.0
 
 Gf-Patterns - Version 1.9
 
-Semgrep - Version 1.34. 0
+Semgrep - Version 1.34.0
 
 Kali Linux -  Version Kali 2023.2a
 
-## Installation
+go - Version 1.17
+
+Dalfox - Version 2.9.0
+
+
+## Installation GoatScan
 1. Download the latest release
 2. Extract the files to your local host document root
 3. Make sure your web server has file permissions
 4. Make sure your installation is protected from unauthorized access
-5. You can start using using our tool and find vulnerabilities
+5. You can start using our tool and find vulnerabilities
+
+##  Installation of Software Requirements
+1. cd into the 'GoatScan/GoatScan-FYP-Team-12/InstallPackages' directory
+2. type 'python InstallPackages.py' to start the installation
 
 ## Usage
-- Open the command prompt and type "python GoatScan.py -h" to run GOATSCAN
+- Open the command prompt and cd into the 'GoatScan/GoatScan-FYP-Team-12/' directory
+- type "python GoatScan.py -h" to run GOATSCAN
 - Customize scan options using command-line arguments.
 
 Development
