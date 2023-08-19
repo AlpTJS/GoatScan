@@ -37,50 +37,49 @@ rules:
       - php
     mode: taint
     pattern-sources:
-        #User-Input
-        - pattern: $_GET
-        - pattern: $_POST
-        - pattern: $_FILES   
-        - pattern: $_COOKIE
-        - pattern: $_REQUEST    #Contain $_GET, $_COOKIE arrays
-        - pattern: get_headers(...)
-        - pattern: getallheaders(...)
-        - pattern: get_browser(...)
-        - pattern: gethostbyaddr(...)
-        - pattern: $_SERVER   # Contain client's req (headers)
+      #User-Input
+      - pattern: $_GET
+      - pattern: $_POST
+      - pattern: $_FILES   
+      - pattern: $_COOKIE
+      - pattern: $_REQUEST    #Contain $_GET, $_COOKIE arrays
+      - pattern: get_headers(...)
+      - pattern: getallheaders(...)
+      - pattern: get_browser(...)
+      - pattern: gethostbyaddr(...)
+      - pattern: $_SERVER   # Contain client's req (headers)
 
-        #Objet Oriented User-Input
-        - pattern: $X->get(...)
-        - pattern: $X::get(...)
-        - pattern: $X->path(...) 
-        - pattern: $X::path(...)
-        - pattern: $X->url...)
-        - pattern: $X::url...)
-        - pattern: $X->fullUrl(...)
-        - pattern: $X-::fullUrl(...)
-        - pattern: $X->method(...)
-        - pattern: $X-::method(...)
-        - pattern: $X->header(...)
-        - pattern: $X-::header(...)
-        - pattern: $X->bearerToken(...)
-        - pattern: $X-::bearerToken(...)
-        - pattern: $X->ip(...)
-        - pattern: $X-::ip(...)
-        - pattern: $X-> all(...)
-        - pattern: $X-::all(...)
-        - pattern: $X->collect(...)
-        - pattern: $X-::collect(...)
-        - pattern: $X->input(...)
-        - pattern: $X-::input(...)
-        - pattern: $X->query(...)
-        - pattern: $X-::query(...)
-        - pattern: $X->method(...)
-        - pattern: $X-::method(...)
+      #Objet Oriented User-Input
+      # - pattern: $X->get(...)
+      # - pattern: $X::get(...)
+      # - pattern: $X->path(...) 
+      # - pattern: $X::path(...)
+      # - pattern: $X->url(...)
+      # - pattern: $X::url(...)
+      # - pattern: $X->fullUrl(...)
+      # - pattern: $X::fullUrl(...)
+      # - pattern: $X->method(...)
+      # - pattern: $X::method(...)
+      # - pattern: $X->header(...)
+      # - pattern: $X::header(...)
+      # - pattern: $X->bearerToken(...)
+      # - pattern: $X::bearerToken(...)
+      # - pattern: $X->ip(...)
+      # - pattern: $X::ip(...)
+      # - pattern: $X-> all(...)
+      # - pattern: $X::all(...)
+      # - pattern: $X->collect(...)
+      # - pattern: $X::collect(...)
+      # - pattern: $X->input(...)
+      # - pattern: $X::input(...)
+      # - pattern: $X->query(...)
+      # - pattern: $X::query(...)
+      # - pattern: $X->method(...)
+      # - pattern: $X::method(...)
 
-    pattern-sanitizer:
+    pattern-sanitizers:
       - pattern: escapeshellarg(...)
       - pattern: escapeshellcmd(...)
-
 
     pattern-sinks:
       - patterns:
