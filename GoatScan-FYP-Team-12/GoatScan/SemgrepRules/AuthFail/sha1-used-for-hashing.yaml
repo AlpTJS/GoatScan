@@ -1,0 +1,37 @@
+rules:
+  - id: sha1-used-for-hashing
+    severity: WARNING
+    message: SHA1 is used as a password hash. SHA1 is insecure due to exploitation
+      of attack vectors. Use a complex password hashing algorithm such as SHA3
+      or SHA 256
+    languages:
+      - php
+    metadata:
+      cwe:
+        - "CWE-327: Use of a Broken or Risky Cryptographic Algorithm"
+      owasp:
+        - A07:2021 - Identification and Authentication Failures
+        - A02:2021 - Cryptographic Failures
+      references:
+        - https://www.nist.gov/news-events/news/2022/12/nist-retires-sha-1-cryptographic-algorithm#:~:text=Today's%20more%20powerful%20computers%20can,SHA%2D1%20in%20recent%20years.
+        - https://venafi.com/blog/what-we-learned-from-the-sha-1-deprecation-rollout-and-sha-2-transition/
+      category: security
+      technology:
+        - crypt
+      subcategory:
+        - vuln
+      likelihood: HIGH
+      impact: MEDIUM
+      confidence: MEDIUM
+    mode: taint
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: sha1(...)
+              - pattern: sha1_file(...)
+    pattern-sinks:
+      - patterns:
+          - pattern: $FUNCTION(...)
+          - metavariable-regex:
+              metavariable: $FUNCTION
+              regex: (?i)(.*pass.*)
