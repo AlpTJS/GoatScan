@@ -1,7 +1,7 @@
 rules:
   - id: md4_used-Weak_Encryption
     severity: WARNING
-    message: It looks like MD4/MD5 is used as a password hash. MD4/MD5 is not a
+    message: It looks like MD4/MD5/SHA1 is used as a password hash. MD4/MD5 is not a
       secure password hash because it can be cracked by an attacker in a short
       amount of time. Use a suitable password hashing function such as bcrypt.
       You can use `password_hash($PASSWORD, PASSWORD_BCRYPT, $OPTIONS);`.
@@ -21,7 +21,7 @@ rules:
         - https://www.php.net/password_hash
       category: security
       technology:
-        - md4, md5
+        - md4, md5, sha1
       subcategory:
         - vuln
       likelihood: HIGH
@@ -36,6 +36,8 @@ rules:
               - pattern: hash('md4', ...)
               - pattern: md5(...)
               - pattern: hash('md5', ...)
+              - pattern: sha1(...)
+              - pattern: sha1_file(...)
     pattern-sinks:
       - patterns:
           - pattern: $FUNCTION(...)
