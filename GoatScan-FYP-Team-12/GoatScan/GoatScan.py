@@ -5,7 +5,7 @@ import os
 import time
 from termcolor import colored
 import pyfiglet
-from halo import Halo
+
 import subprocess
 import requests
 import json
@@ -20,20 +20,6 @@ import sys
 
 # =============Start of Program=============//
 
-
-def sleep(ms=5000):
-    time.sleep(ms / 1000)
-
-
-def timer(seconds):
-    time.sleep(seconds)
-
-
-async def spinner(result):
-    spinner = Halo(text='Loading...', spinner='dots')
-    spinner.start()
-    await time.sleep(2)  # Simulating some async operation
-    spinner.succeed("Answer: " + result)
 
 
 # Welcome GUI function
