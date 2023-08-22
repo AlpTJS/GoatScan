@@ -5,11 +5,8 @@ import os
 import time
 from termcolor import colored
 import pyfiglet
-
 import subprocess
 import requests
-import json
-# New imports i added for gf/wget
 from urllib.parse import urlparse
 import json
 import shutil
@@ -31,7 +28,7 @@ def welcome():
     print(styled_text)
 
 
-# <<<Validate Url Function>>>
+# <<<Check if Main Domain>>>
 def is_valid_url(input_url):
     parsed_url = urlparse(input_url)
     return all([parsed_url.scheme, parsed_url.netloc])
@@ -60,19 +57,15 @@ def user_configurations(url, uname, pwd):
 
 
 # Login and retrieve cookie function
-def wp_login(userInputs):
+def wp_login(wordpress_domain, user_name, password):
 
     try:
-        loaded_userInputs = json.loads(userInputs)
-        ip_addr = loaded_userInputs["ipaddr"]
-        username = loaded_userInputs["username"]
-        password = loaded_userInputs["password"]
-        login_url = "http://" + ip_addr + "/wp-login.php?loggedout=true&wp_lang=en_US"
+        login_url = wordpress_domain + "/wp-login.php?loggedout=true&wp_lang=en_US"
 
         # Log in and retrieve the authentication cookie
         session = requests.Session()
         login_payload = {
-            "log": username,
+            "log": user_name,
             "pwd": password,
             "wp-submit": "Log In"
         }
@@ -101,7 +94,7 @@ def wp_login(userInputs):
             return "Login failed: HTTP status " + str(response.status_code)
     
     except Exception as e:
-        return "Error: " + str(e)
+        return False
 
 
 # Extract specific lines & cols from php/jsonn file
@@ -270,7 +263,7 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                 #SQLMAP Output
                 if os.path.exists(file):
                     for root, dirs, files in os.walk(file):
-                        resultNo = 0
+                        resultNo = 1
                         for dir_name in dirs:
                             log_file_path = os.path.join(root, dir_name, 'log')
                             target_file_path = os.path.join(root, dir_name, 'target.txt')           
@@ -284,31 +277,47 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                                 urls = target_contents.split('\n')
 
                                 # Split the log contents into individual sections based on '---'
-                                log_sections = log_contents.split('---\n')
-                                # Iterate through each URL and corresponding log section
-                                for url, log_section in zip(urls, log_sections):
+                                log_sections = log_contents.split('---')
+                                print(log_sections)
+                                print (len(log_sections))
+                                # Iterate through each URL 
+                                for url in urls:
+                                    if '(GET)' in url or '(POST)' in url:
+                                        #Iterate through log file
+                                        for log_section in log_sections:
+                                        
+                                            print(log_section)
+                                            print(len(log_sections))
+                            
+                                            # Extract parameter, type, title, and payload from the log section
+                                            if ('Parameter:' in log_section and 'Type:' in log_section and 'Payload:' in log_section):     
+                                                finalResultText += f'Result #{resultNo}:\n\n'
+                                                finalResultText += f'\nTarget URL: {url}\n'                                    
+                                                finalResultText += '\n' +log_section
+                                                resultNo += 1 
+                                                finalResultText += f'--------------------------------------------------------------------------------\n'
+                                    
+                                        # injection_points=[]
 
-                                    finalResultText += f'Result #{resultNo}:\n\n'
-                                    finalResultText += f'\nTarget URL: {url}\n'
 
-                                    # Extract parameter, type, title, and payload from the log section
-                                    injection_points=[]
+                                        # for line in log_section.split('\n'):
+                                        #     print (line)
+                                        #     if 'Parameter:' in line:
+                                        #         finalResultText += f'\nParameter: {parameter_name}\n'
+                                        #         parameter_name = line.split('Parameter:')[1].strip()
+                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
+                                        #     elif 'Type:' in line:
+                                        #         injection_point = {'type': line.split('Type:')[1].strip()}
+                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
+                                        #     elif 'Payload:' in line:
+                                        #         injection_point['payload'] = line.split('Payload:')[1].strip()
+                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
 
-                                    for line in log_section.split('\n'):
-                                        if 'Parameter:' in line:
-                                            finalResultText += f'\nParameter: {parameter_name}\n'
-                                            parameter_name = line.split('Parameter:')[1].strip()
-                                        elif 'Type:' in line:
-                                            injection_point = {'type': line.split('Type:')[1].strip()}
-                                        elif 'Payload:' in line:
-                                            injection_point['payload'] = line.split('Payload:')[1].strip()
-                                            injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
-
-                                 
-                                    for inj_point in injection_points:
-                                        finalResultText += '\n\tType: '+ inj_point['type']+'\n'
-                                        finalResultText +='\n\tPayload: '+ inj_point['payload']+'\n\n'
-                                        finalResultText += f'--------------------------------------------------------------------------------\n'
+                                    
+                                        # for inj_point in injection_points:
+                                        #     finalResultText += '\n\tType: '+ inj_point['type']+'\n'
+                                        #     finalResultText +='\n\tPayload: '+ inj_point['payload']+'\n\n'
+                                            
                                         
 
     # Write all the results to the file
@@ -419,7 +428,7 @@ def run_wget(url, cookie):
 def run_gf(urls_file, type):
     # Run gf for {vulnerability_type} patterns
     params_urls_file = f'temp/{type}gf.txt'
-    print (params_urls_file)
+
     try:
         subprocess.run(f"cat {urls_file} | gf {type} > {params_urls_file}", shell=True, check=True)
         print(f"Gf {type} Urls with parameters are stored in {params_urls_file}")
@@ -430,20 +439,19 @@ def run_gf(urls_file, type):
     
 
 # <<<Dalfox Function>>>
-def run_DalFox(param_urls, cookie, temp_dir):
+def run_DalFox(param_urls, cookie, type):
 
     dalfox_output = f'temp/dalfox.json'
     print (cookie)
-    print(type(cookie))
-
     if os.path.exists(dalfox_output):
         os.remove(dalfox_output)
         print(f"File '{dalfox_output}' deleted successfully.")
 
     if cookie: 
-        dalfox_command = ['dalfox', 'file', param_urls, '--cookie', cookie, '--skip-bav', '--format', 'json', '-o', dalfox_output]   
+        dalfox_command = ['dalfox', type, param_urls, '--delay', '150', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]   
+        # dalfox_command = ['dalfox', type, param_urls, '--cookie', cookie, '--skip-bav', '--format', 'json', '-o', dalfox_output]   
     else: 
-        dalfox_command = ['dalfox', 'file', param_urls, '--skip-bav', '--format', 'json', '-o', dalfox_output]        
+        dalfox_command = ['dalfox', type, param_urls, '--delay', '150','--skip-bav','skip-mining-dom', '--format','json', '-o', dalfox_output]        
 
     try:
         print("Dalfox running. Dynamic scanning in progress. Please be patient.")
@@ -451,12 +459,11 @@ def run_DalFox(param_urls, cookie, temp_dir):
         print(f"Dalfox temporary results is stored in {dalfox_output}")
         
         return (dalfox_output)
-    
     except subprocess.CalledProcessError as e:
         print("An error occurred while running Dalfox:", e)
 
 
-def run_sqlmap(param_urls, cookie, temp_dir):
+def run_sqlmap(param_urls, cookie, type):
     # sqlmap_dir = temp_dir + "/sqlmap"
     sqlmap_dir= 'temp/sqlmap'
     if os.path.exists(sqlmap_dir):
@@ -465,9 +472,9 @@ def run_sqlmap(param_urls, cookie, temp_dir):
         print(cookie)
 
     if cookie: 
-        sqlmap_command=["sqlmap", "-m", param_urls, "--cookie", cookie ,"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
+        sqlmap_command=["sqlmap", type, param_urls, "--cookie", cookie ,"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
     else:
-        sqlmap_command = ["sqlmap", "-m", param_urls, "--batch","--risk","2","--level","1","--threads", "10", "--output-dir", sqlmap_dir]
+        sqlmap_command = ["sqlmap", type, param_urls, "--batch","--risk","2","--level","1","--threads", "10", "--output-dir", sqlmap_dir]
     
     loading_frames = ["Loading...", "Loading."]
     try:
@@ -507,6 +514,7 @@ def run_sqlmap(param_urls, cookie, temp_dir):
 def scanning_command(args):
     welcome()
     plugin_folder = args.scan
+    wordpress_domain=args.domain
     wordpress_url = args.url
     user_name = args.uname
     password = args.pwd
@@ -551,8 +559,8 @@ def scanning_command(args):
                             'AuthFail': AuthFailOutput
                             }
 
-        if wordpress_url:
-            dynamicOutputFiles = dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir)
+        if wordpress_domain or wordpress_url:
+            dynamicOutputFiles = dynamic_scan(wordpress_domain, wordpress_url, user_name, password, cookie, temp_dir)
             generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)
         else:
             generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir)    
@@ -560,56 +568,67 @@ def scanning_command(args):
     else: print("Invalid Output Directory Argument, please enter a valid input.")
     
 # <<<Dynamic Scan Functions>>>
-def dynamic_scan(wordpress_url, user_name, password, cookie, temp_dir):
+def dynamic_scan(wordpress_domain, wordpress_url, user_name, password, cookie, temp_dir):
 
     print('Starting Dynamic Scan...')
 
-    # Define the path to the shell script
-    shell_script_path = 'InstallPackages/setup_go_env.sh' 
-    # Set the execute permission on the shell script file
-    os.chmod(shell_script_path, 0o755)
-    # Execute the shell script
-    subprocess.run(['bash', shell_script_path], check=True)
+    # # Define the path to the shell script
+    # shell_script_path = 'InstallPackages/setup_go_env.sh' 
+    # # Set the execute permission on the shell script file
+    # subprocess.run(['chmod', 'u+x', shell_script_path], check=True)
+    # # Use bash -c to source the shell script
+    # subprocess.run(['. {shell_script_path}'], shell=True, check=True)
+    commands = [
+    "export PATH=$PATH:/usr/local/go/bin",
+    "export GOPATH=$HOME/go",
+    "export PATH=$PATH:$GOPATH/bin"
+    ]
+    for command in commands:
+        subprocess.run(command, shell=True)
 
-
-    if (user_name and password and not cookie):
+    if (wordpress_domain and user_name and password and not cookie):
         # Get Cookie with User Config
-        user_configurations = (wordpress_url, user_name, password)
-        cookie = wp_login(user_configurations) 
-        print('Scanning for Authenticated Pages')
 
-        if not cookie.startswith("'") and not cookie.endswith("'"):
-            cookie = f"'{cookie}'"
+
+        cookie = wp_login(wordpress_domain, user_name, password) 
+        
+        if cookie==False:
+            print('Failed to retireve cookie. Please enter valid login credentials and WordPress domain name.')
+            return 
+        else:
+            cookie = str(cookie)
    
     elif cookie:
-        if not cookie.startswith("'") and not cookie.endswith("'"):
-            cookie = f"'{cookie}'"
+            cookie = str(cookie)
       
     else:
         cookie=False
 
     # Check if input is an url
-    if is_valid_url(wordpress_url):
+    if (wordpress_url):
+        wordpress_url = str(wordpress_url)
+        dalfox_output = run_DalFox(wordpress_url, cookie, 'url')
+        sqlmap_output = run_sqlmap(wordpress_url, cookie, '-u')
 
+    elif (wordpress_domain):
+        wordpress_domain=str(wordpress_domain)
         # Website Crawling
-        urls_file = run_wget(wordpress_url, cookie)
+        urls_file = run_wget(wordpress_domain, cookie)
 
         # XSS Dynamic Analysis
         xss_urls_file = run_gf(urls_file, 'xss')
-        dalfox_output = run_DalFox(xss_urls_file, cookie, temp_dir)
+        dalfox_output = run_DalFox(xss_urls_file, cookie, 'file')
         
-
         # SQL Dynamic Analysis
         sqli_urls_file = run_gf(urls_file, 'sql')
-        sqlmap_output = run_sqlmap(sqli_urls_file, cookie, temp_dir)
+        sqlmap_output = run_sqlmap(sqli_urls_file, cookie, '-m')
 
-        dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
-                              'SQLMAP (DYNAMIC SQLI)':sqlmap_output}
+    dynamicOutputFiles = {'DALFOX (DYNAMIC XSS)':dalfox_output,
+                        'SQLMAP (DYNAMIC SQLI)':sqlmap_output}
           
-        return dynamicOutputFiles
-    else:
-        print("Invalid URL, please enter a valid input.")
-        return False
+
+    return dynamicOutputFiles
+    
 
 # <<< Argparser module >>>
 # var parser defines the program's cmd-line interface
@@ -623,15 +642,17 @@ scanning_parser = subparsers.add_parser('Scanning', help='Scan the plugin')
 scanning_parser.add_argument(
     '-f', '--file', dest='scan', required=True, help='Scan plugin file/folder')
 scanning_parser.add_argument(
-    '-o', '--output', dest='output', required=True, help='Output.txt file destination')
+    '-o', '--output', dest='output', required=True, help='Output folder destination')
 scanning_parser.add_argument(
-    '-u', '--url', dest='url', help='Scan wordpress website url')
+    '-d', '--domain', dest='domain', help='Scan the entire WordPress website domain')
 scanning_parser.add_argument(
-    '-n', '--uname', dest='uname', help='Your username for your wordpress website')
+    '-u', '--url', dest='url', help='Scan a specific url')
 scanning_parser.add_argument(
-    '-p', '--pwd', dest='pwd', help='Your password for your wordpress website')
+    '-n', '--uname', dest='uname', help='Your username for your WordPress website')
 scanning_parser.add_argument(
-    '-c', '--cookie', dest='cookie', help='Cookie for your website')
+    '-p', '--pwd', dest='pwd', help='Your password for your WordPress website')
+scanning_parser.add_argument(
+    '-c', '--cookie', dest='cookie', help='Enter the cookie for your website manually')
 
 # function to call when "Scanning" is used
 scanning_parser.set_defaults(func=scanning_command)
