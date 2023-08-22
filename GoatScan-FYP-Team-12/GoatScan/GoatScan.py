@@ -296,30 +296,8 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
                                                 finalResultText += '\n' +log_section
                                                 resultNo += 1 
                                                 finalResultText += f'--------------------------------------------------------------------------------\n'
-                                    
-                                        # injection_points=[]
-
-
-                                        # for line in log_section.split('\n'):
-                                        #     print (line)
-                                        #     if 'Parameter:' in line:
-                                        #         finalResultText += f'\nParameter: {parameter_name}\n'
-                                        #         parameter_name = line.split('Parameter:')[1].strip()
-                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
-                                        #     elif 'Type:' in line:
-                                        #         injection_point = {'type': line.split('Type:')[1].strip()}
-                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
-                                        #     elif 'Payload:' in line:
-                                        #         injection_point['payload'] = line.split('Payload:')[1].strip()
-                                        #         injection_points.append(injection_point.copy())  # Use copy to avoid overwriting
-
-                                    
-                                        # for inj_point in injection_points:
-                                        #     finalResultText += '\n\tType: '+ inj_point['type']+'\n'
-                                        #     finalResultText +='\n\tPayload: '+ inj_point['payload']+'\n\n'
-                                            
+                            
                                         
-
     # Write all the results to the file
     finalResult = os.path.join(output_dir, f'FinalResults.txt')
     with open(finalResult, 'w') as file:
