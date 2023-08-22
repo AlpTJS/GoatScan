@@ -572,20 +572,6 @@ def dynamic_scan(wordpress_domain, wordpress_url, user_name, password, cookie, t
 
     print('Starting Dynamic Scan...')
 
-    # # Define the path to the shell script
-    # shell_script_path = 'InstallPackages/setup_go_env.sh' 
-    # # Set the execute permission on the shell script file
-    # subprocess.run(['chmod', 'u+x', shell_script_path], check=True)
-    # # Use bash -c to source the shell script
-    # subprocess.run(['. {shell_script_path}'], shell=True, check=True)
-    commands = [
-    "export PATH=$PATH:/usr/local/go/bin",
-    "export GOPATH=$HOME/go",
-    "export PATH=$PATH:$GOPATH/bin"
-    ]
-    for command in commands:
-        subprocess.run(command, shell=True)
-
     if (wordpress_domain and user_name and password and not cookie):
         # Get Cookie with User Config
 
