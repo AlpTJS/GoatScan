@@ -12,7 +12,7 @@ go install github.com/tomnomnom/gf@latest
 echo "Setting up gf patterns..."
 mkdir ~/.gf
 git clone https://github.com/1ndianl33t/Gf-Patterns.git # Upload our pattern to Github and change this
-sudo cp ~/Gf-Patterns/*.json ~/.gf #Change "Gf-Patterns accordingly as well"
+sudo cp Gf-Patterns/*.json ~/.gf #Change "Gf-Patterns accordingly as well"
 
 
 # Update shell configuration
