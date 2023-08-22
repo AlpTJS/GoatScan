@@ -418,8 +418,7 @@ def run_DalFox(param_urls, cookie, type):
         os.remove(dalfox_output)
 
     if cookie: 
-        dalfox_command = ['dalfox', type, param_urls, '--delay', '150', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]   
-        # dalfox_command = ['dalfox', type, param_urls, '--cookie', cookie, '--skip-bav', '--format', 'json', '-o', dalfox_output]   
+        dalfox_command = ['dalfox', type, param_urls, '--delay', '150', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]    
     else: 
         dalfox_command = ['dalfox', type, param_urls, '--delay', '150','--skip-bav','skip-mining-dom', '--format','json', '-o', dalfox_output]        
 
