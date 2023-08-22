@@ -278,17 +278,11 @@ def generateFinalOutput(semgrepOutputFiles,dynamicOutputFiles,output_dir):
 
                                 # Split the log contents into individual sections based on '---'
                                 log_sections = log_contents.split('---')
-                                print(log_sections)
-                                print (len(log_sections))
                                 # Iterate through each URL 
                                 for url in urls:
                                     if '(GET)' in url or '(POST)' in url:
                                         #Iterate through log file
                                         for log_section in log_sections:
-                                        
-                                            print(log_section)
-                                            print(len(log_sections))
-                            
                                             # Extract parameter, type, title, and payload from the log section
                                             if ('Parameter:' in log_section and 'Type:' in log_section and 'Payload:' in log_section):     
                                                 finalResultText += f'Result #{resultNo}:\n\n'
@@ -420,10 +414,8 @@ def run_gf(urls_file, type):
 def run_DalFox(param_urls, cookie, type):
 
     dalfox_output = f'temp/dalfox.json'
-    print (cookie)
     if os.path.exists(dalfox_output):
         os.remove(dalfox_output)
-        print(f"File '{dalfox_output}' deleted successfully.")
 
     if cookie: 
         dalfox_command = ['dalfox', type, param_urls, '--delay', '150', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]   
@@ -446,8 +438,6 @@ def run_sqlmap(param_urls, cookie, type):
     sqlmap_dir= 'temp/sqlmap'
     if os.path.exists(sqlmap_dir):
         shutil.rmtree(sqlmap_dir)
-        print(f"Folder '{sqlmap_dir}' deleted successfully.")
-        print(cookie)
 
     if cookie: 
         sqlmap_command=["sqlmap", type, param_urls, "--cookie", cookie ,"--batch","--risk","2","--level", "1", "--threads", "10", "--output-dir", sqlmap_dir]
