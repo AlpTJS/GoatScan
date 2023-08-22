@@ -30,6 +30,7 @@ go - Version 1.17
 
 Dalfox - Version 2.9.0
 
+Steps for Automated Installation of Software Requirements are listed below
 
 ## Installation GoatScan
 1. Download the latest release
@@ -38,14 +39,29 @@ Dalfox - Version 2.9.0
 4. Make sure your installation is protected from unauthorized access
 5. You can start using our tool and find vulnerabilities
 
-##  Installation of Software Requirements
+##  Automated Installation of Software Requirements
 1. cd into the 'GoatScan/GoatScan-FYP-Team-12/InstallPackages' directory
 2. type 'python InstallPackages.py' to start the installation
 
 ## Usage
-- Open the command prompt and cd into the 'GoatScan/GoatScan-FYP-Team-12/' directory
+- Open the command prompt and ensure that you have set up the go environment by entering the following 3 commands:
+    1. export PATH=$PATH:/usr/local/go/bin
+    2. export GOPATH=$HOME/go
+    3. export PATH=$PATH:$GOPATH/bin
+- cd into the 'GoatScan/GoatScan-FYP-Team-12/' directory
 - type "python GoatScan.py -h" to run GOATSCAN
 - Customize scan options using command-line arguments.
+
+## Test Cases
+1. Scanning Plugin located in Desktop folder, output to Desktop Folder, scanning a specific authenticated webpage by providing cookie:
+`python GoatScan.py Scanning -f ~/Desktop/jibu-pro -o ~/Desktop/ -u "http://localhost/wordpress/wp-admin/admin-ajax.php?action=efbl_generate_popup_html&rand_id=" -c 'wordpress_bbfa5b726c6b7a9cf3cda9370be3ee91=admin%7C1692760286%7CuPNdKBnHWVUHxZrJE7BUpbuX11PTIFUQspOKkwPxUbJ%7Ce4201f33ebf517f7cffa4d323fbad0b5a1ae6c90da6e29839c219e770c415611; wordpress_test_cookie=WP%20Cookie%20check; wordpress_logged_in_bbfa5b726c6b7a9cf3cda9370be3ee91=admin%7C1692760286%7CuPNdKBnHWVUHxZrJE7BUpbuX11PTIFUQspOKkwPxUbJ%7C70441bd4575ad89953f8ae3ef7df19fae87ecf2f9b9dfae5764698b2fd74585e;'`
+
+2. Scanning a specific authenticated webpage by providing the WordPress domain name, username and password
+`python GoatScan.py Scanning -f ~/Desktop/jibu-pro -o ~/Desktop/ -u "http://localhost/wordpress/wp-admin/admin-ajax.php?action=efbl_generate_popup_html&rand_id="  -d "http://localhost/wordpress" - n admin - p 1qwer\$\#\@\!`
+
+3. Scanning an entire website by providing the website's Domain name (This process is time-consuming for wordpress websites)
+`python GoatScan.py Scanning -f ~/Desktop/jibu-pro -o ~/Desktop/ -d 'http://testphp.vulnweb.com/'`
+
 
 Development
 ## Development
