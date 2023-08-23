@@ -87,6 +87,7 @@ rules:
   - pattern: filter_input(...)
   - pattern: json_encode(...)
   - pattern: intval(...)
+  - pattern: esc_html__(...)
   
   
   pattern-sinks:
