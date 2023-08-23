@@ -38,7 +38,6 @@ rules:
           - pattern: esc_sql(...)
 
   pattern-sources:
-
       #User-Input
       - pattern: $_GET
       - pattern: $_POST
