@@ -11,7 +11,6 @@ from urllib.parse import urlparse
 import json
 import shutil
 import sys
-
 # =============Install required dependencies=============
 
 
@@ -27,11 +26,6 @@ def welcome():
     styled_text = '\033[1;37;100m' + description + '\033[0m'
     print(styled_text)
 
-
-# <<<Check if Main Domain>>>
-def is_valid_url(input_url):
-    parsed_url = urlparse(input_url)
-    return all([parsed_url.scheme, parsed_url.netloc])
 
 
 # Check for "login.php" or "register.php"
@@ -374,7 +368,7 @@ def run_wget(url, cookie):
         wget_command = [
         'wget', 
         '--spider',
-        f'Cookie: {cookie}', 
+        f'Cookie: {cookie}'
         '-r', 
         url
         ]
@@ -418,9 +412,9 @@ def run_DalFox(param_urls, cookie, type):
         os.remove(dalfox_output)
 
     if cookie: 
-        dalfox_command = ['dalfox', type, param_urls, '--delay', '150', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]    
+        dalfox_command = ['dalfox', type, param_urls, '--delay', '120', '--cookie', cookie, '--skip-bav', 'skip-mining-dom', '--format', 'json', '-o', dalfox_output]    
     else: 
-        dalfox_command = ['dalfox', type, param_urls, '--delay', '150','--skip-bav','skip-mining-dom', '--format','json', '-o', dalfox_output]        
+        dalfox_command = ['dalfox', type, param_urls, '--delay', '120','--skip-bav','skip-mining-dom', '--format','json', '-o', dalfox_output]        
 
     try:
         print("Dalfox running. Dynamic scanning in progress. Please be patient.")
@@ -541,7 +535,6 @@ def dynamic_scan(wordpress_domain, wordpress_url, user_name, password, cookie, t
 
     if (wordpress_domain and user_name and password and not cookie):
         # Get Cookie with User Config
-
 
         cookie = wp_login(wordpress_domain, user_name, password) 
         
