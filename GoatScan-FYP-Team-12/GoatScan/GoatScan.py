@@ -348,6 +348,10 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
 # <<<Wget Function>>>
 def run_wget(url, cookie):
 
+    with open('temp/cookie.txt', 'w') as file:
+        file.writelines(cookie)
+
+
     #Ensure url ends with '/'
     if not url.endswith('/'):
         url += '/'
@@ -368,8 +372,7 @@ def run_wget(url, cookie):
         wget_command = [
         'wget', 
         '--spider',
-        '--header',
-        f'Cookie: '+ cookie,
+        '--load-cookies','temp/cookie.txt',
         '-r', 
         url
         ]
