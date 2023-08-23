@@ -368,7 +368,8 @@ def run_wget(url, cookie):
         wget_command = [
         'wget', 
         '--spider',
-        f'Cookie: {cookie}'
+        '--header',
+        f'Cookie: '+ cookie,
         '-r', 
         url
         ]
