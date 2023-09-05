@@ -346,18 +346,18 @@ def run_SemGrep(scan_target, type, rule_directory, temp_dir):
     
 
 # <<<Wget Function>>>
-def run_wget(url, cookie):
+def run_wget(url, cookie, temp_dir):
 
-    with open('temp/cookie.txt', 'w') as file:
+    cookie_file = f'{temp_dir}/cookie.txt'
+    with open(cookie_file, 'w') as file:
         file.writelines(cookie)
-
 
     #Ensure url ends with '/'
     if not url.endswith('/'):
         url += '/'
 
     #Wget output
-    urls_file = 'temp/wget.txt'
+    urls_file = f'{temp_dir}/wget.txt'
 
     if not cookie:
         print('no wget cookie')
@@ -372,7 +372,7 @@ def run_wget(url, cookie):
         wget_command = [
         'wget', 
         '--spider',
-        '--load-cookies','temp/cookie.txt',
+        '--load-cookies',cookie_file,
         '-r', 
         url
         ]
@@ -395,9 +395,9 @@ def run_wget(url, cookie):
     
 # <<<Gf Function>>>
 
-def run_gf(urls_file, type):
+def run_gf(urls_file, type, temp_dir):
     # Run gf for {vulnerability_type} patterns
-    params_urls_file = f'temp/{type}gf.txt'
+    params_urls_file = f'{temp_dir}/{type}gf.txt'
 
     try:
         subprocess.run(f"cat {urls_file} | gf {type} > {params_urls_file}", shell=True, check=True)
@@ -409,9 +409,9 @@ def run_gf(urls_file, type):
     
 
 # <<<Dalfox Function>>>
-def run_DalFox(param_urls, cookie, type):
+def run_DalFox(param_urls, cookie, type, temp_dir):
 
-    dalfox_output = f'temp/dalfox.json'
+    dalfox_output = f'{temp_dir}/dalfox.json'
     if os.path.exists(dalfox_output):
         os.remove(dalfox_output)
 
@@ -430,9 +430,9 @@ def run_DalFox(param_urls, cookie, type):
         print("An error occurred while running Dalfox:", e)
 
 
-def run_sqlmap(param_urls, cookie, type):
-    # sqlmap_dir = temp_dir + "/sqlmap"
-    sqlmap_dir= 'temp/sqlmap'
+def run_sqlmap(param_urls, cookie, type, temp_dir):
+  
+    sqlmap_dir= f'{temp_dir}/sqlmap'
     if os.path.exists(sqlmap_dir):
         shutil.rmtree(sqlmap_dir)
 
@@ -487,7 +487,7 @@ def scanning_command(args):
     cookie = args.cookie
     dynamicOutputFiles = False
     current_dir = os.getcwd()
-    temp_dir = os.path.join(current_dir, 'temp')
+    temp_dir = os.path.join(current_dir, 'GoatScanTemp')
 
     # Create the temp directory if it doesn't exist
     if not os.path.exists(temp_dir):
@@ -536,37 +536,32 @@ def scanning_command(args):
 def dynamic_scan(wordpress_domain, wordpress_url, user_name, password, cookie, temp_dir):
 
     print('Starting Dynamic Scan...')
-
     if (wordpress_domain and user_name and password and not cookie):
         # Get Cookie with User Config
-
         cookie = wp_login(wordpress_domain, user_name, password) 
-        
         if cookie==False:
             print('Failed to retireve cookie. Please enter valid login credentials and WordPress domain name.')
             return 
         else:
             cookie = str(cookie)
-   
     elif cookie:
             cookie = str(cookie)
-      
     else:
         cookie=False
 
     # Check if input is an url
     if (wordpress_url):
         wordpress_url = str(wordpress_url)
-        dalfox_output = run_DalFox(wordpress_url, cookie, 'url')
-        sqlmap_output = run_sqlmap(wordpress_url, cookie, '-u')
+        dalfox_output = run_DalFox(wordpress_url, cookie, 'url',temp_dir)
+        sqlmap_output = run_sqlmap(wordpress_url, cookie, '-u', temp_dir)
 
     elif (wordpress_domain):
         wordpress_domain=str(wordpress_domain)
         # Website Crawling
-        urls_file = run_wget(wordpress_domain, cookie)
+        urls_file = run_wget(wordpress_domain, cookie, temp_dir)
 
         # XSS Dynamic Analysis
-        xss_urls_file = run_gf(urls_file, 'xss')
+        xss_urls_file = run_gf(urls_file, 'xss', temp_dir)
         dalfox_output = run_DalFox(xss_urls_file, cookie, 'file')
         
         # SQL Dynamic Analysis
