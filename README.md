@@ -6,6 +6,7 @@ Notably, GoatScan also has the ability to scan authenticated pages, providing a 
   2. The file path of the file with the vulnerability along with the line number(s) of the vulnerable code
   3. The source and sink of the vulnerable code
 
+![GoatScan](https://github.com/AlpTJS/GoatScan/assets/134588108/ed086764-745a-44dc-9c9f-4cefb7233516)
 
 ## Requirements
 ### Hardware requirements
@@ -32,7 +33,7 @@ Dalfox - Version 2.9.0
 
 Steps for Automated Installation of Software Requirements are listed below
 
-## Installation GoatScan
+## Installation Guide GoatScan
 1. Download the latest release
 2. Extract the files to your local host document root
 3. Make sure your web server has file permissions
@@ -66,6 +67,19 @@ Steps for Automated Installation of Software Requirements are listed below
 
 4. Scanning an entire website by providing the website's Domain name (This process is time-consuming for wordpress websites)
 `python GoatScan.py Scanning -f ~/Desktop/jibu-pro -o ~/Desktop/ -d 'http://testphp.vulnweb.com/'`
+
+## Expected Output
+- Static Scan Output
+  - Vulnerability type (XSS/SQLI/CMDI/Auth Failure)
+  - Vulnerable File Path
+  - Vulnerable Dataflow
+![image](https://github.com/AlpTJS/GoatScan/assets/134588108/3c7994fa-a759-407f-8e19-b0668e089302)
+
+- Dynamic Scan Output
+  - Provides the vulnerable URL
+  - corresponding payload injected
+  - Vulnerable parameter
+![image](https://github.com/AlpTJS/GoatScan/assets/134588108/b4fb3fad-cc02-49f9-82ee-073192fa4ee5)
 
 
 Development
