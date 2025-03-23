@@ -17,7 +17,7 @@ import sys
 # =============Start of Program=============//
 
 
-
+print("Hello World")
 # Welcome GUI function
 def welcome():
     f = pyfiglet.Figlet(font='big')
